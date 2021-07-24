@@ -96,7 +96,7 @@ try
 
     # Get Modified Workspaces since last scan
 
-    $workspacesModified = Invoke-PBIRequest -authToken $authToken -resource $modifiedRequestUrl -admin
+    $workspacesModified = @(Invoke-PBIRequest -authToken $authToken -resource $modifiedRequestUrl -admin)
 
     if (!$workspacesModified)
     {
@@ -123,7 +123,7 @@ try
             {
                 Write-Host "Requesting workspace scan: $($skip + $batchCount) / $($workspacesModified.Count)"
     
-                $bodyStr = @{"workspaces" = $workspacesBatch.Id } | ConvertTo-Json
+                $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
 
                 $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true"
 
@@ -147,6 +147,10 @@ try
                 Start-Sleep -Seconds ($waitSeconds + 5)
 
                 $authToken = Get-PBIAuthToken -clientId $config.ServicePrincipal.AppId -clientSecret $config.ServicePrincipal.AppSecret -tenantId $config.ServicePrincipal.TenantId
+            }
+            else
+            {
+                throw
             }
         }
     }
@@ -205,6 +209,10 @@ try
                 Start-Sleep -Seconds ($waitSeconds + 5)                
 
                 $authToken = Get-PBIAuthToken -clientId $config.ServicePrincipal.AppId -clientSecret $config.ServicePrincipal.AppSecret -tenantId $config.ServicePrincipal.TenantId
+            }
+            else
+            {
+                throw
             }      
         }
     }

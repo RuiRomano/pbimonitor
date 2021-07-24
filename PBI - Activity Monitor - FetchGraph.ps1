@@ -168,7 +168,7 @@ $graphUrl = "https://graph.microsoft.com/beta"
 
 Write-Host "Getting Users from Graph"
 
-$users = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/users?`$select=id,mail,companyName,displayName,assignedLicenses,onPremisesUserPrincipalName,UserPrincipalName,jobTitle" 
+$users = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/users?`$select=id,mail,companyName,displayName,assignedLicenses,onPremisesUserPrincipalName,UserPrincipalName,jobTitle,userType" 
 
 $filePath = "$outputPath\users.json"
 
