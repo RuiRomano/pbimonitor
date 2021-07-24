@@ -1,3 +1,2 @@
 *.pbix
 /devicecodetoken.bin
-/Config*.json
