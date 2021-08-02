@@ -34,32 +34,7 @@ try
 
     $authToken = Get-PBIAuthToken -clientId $config.ServicePrincipal.AppId -clientSecret $config.ServicePrincipal.AppSecret -tenantId $config.ServicePrincipal.TenantId
 
-    #region ADMIN API
-
-    # Get workspaces + users (need this because users dont come in the async api)
-
-    $filePath =  "$outputPath\workspaces.users.json" 
-
-    if (!(Test-Path $filePath))
-    {                
-        $result = @(Invoke-PBIRequest -authToken $authToken -resource "groups" -odataParams "`$expand=users" -batchCount 5000 -admin)
-
-        foreach ($item in $result)
-        {
-            $groupId = $item.id
-
-            $items = $item.users
-
-            $items | Add-Member -NotePropertyName groupId -NotePropertyValue $groupId -Force
-        }
-
-        $result.users | ConvertTo-Json -Depth 5 -Compress | Out-File $filePath
-
-    }
-    else
-    {
-        Write-Host "'filePath' file already exists"
-    }
+    #region ADMIN API    
 
     $filePath = "$outputPath\apps.json"    
 
@@ -125,7 +100,7 @@ try
     
                 $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
 
-                $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true"
+                $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
 
                 $workspacesScanRequests += Invoke-PBIRequest -authToken $authToken -resource "workspaces/getInfo?$getInfoDetails" -body $bodyStr -admin -method Post -Verbose
 
