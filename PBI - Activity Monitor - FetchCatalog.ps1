@@ -1,27 +1,31 @@
-﻿#Requires -Modules @{ ModuleName="PowerBIPS"; ModuleVersion="2.0.4.11" }
+﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt"; ModuleVersion="1.2.1026" }
 
 param(        
-    $outputPath = (".\Data\Catalog\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today),    
+    $outputPath = ".\Data\Catalog",    
     $configFilePath = ".\Config.json",
     $reset = $false
 )
 
 $ErrorActionPreference = "Stop"
-$VerbosePreference = "SilentlyContinue"
+$VerbosePreference = "Continue"
 
 try
 {
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
-    $stopwatch.Start()
-
+    $stopwatch.Start()   
 
     $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
 
     Set-Location $currentPath
 
     # ensure folder
+ 
+    $scansOutputPath = Join-Path $outputPath ("scans\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
+    $snapshotOutputPath = Join-Path $outputPath ("snapshots\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
 
-    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
+    New-Item -ItemType Directory -Path $scansOutputPath -ErrorAction SilentlyContinue | Out-Null
+    New-Item -ItemType Directory -Path $snapshotOutputPath -ErrorAction SilentlyContinue | Out-Null
+
     
     if (Test-Path $configFilePath)
     {
@@ -32,17 +36,20 @@ try
         throw "Cannot find config file '$configFilePath'"
     }
 
-    $authToken = Get-PBIAuthToken -clientId $config.ServicePrincipal.AppId -clientSecret $config.ServicePrincipal.AppSecret -tenantId $config.ServicePrincipal.TenantId
+
+    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+
+    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
 
     #region ADMIN API    
 
-    $filePath = "$outputPath\apps.json"    
+    $filePath = "$snapshotOutputPath\apps.json"    
 
     if (!(Test-Path $filePath))
-    {        
-        $result = @(Invoke-PBIRequest -authToken $authToken -resource "apps" -odataParams "" -batchCount 5000 -admin)
+    {     
+        $result = Invoke-PowerBIRestMethod -Url "admin/apps?`$top=5000&`$skip=0 " -Method Get | ConvertFrom-Json
 
-        $result | ConvertTo-Json -Depth 5 -Compress | Out-File $filePath
+        @($result.value) | ConvertTo-Json -Depth 5 -Compress | Out-File $filePath
     }
     else
     {
@@ -55,7 +62,7 @@ try
 
     Write-Host "Getting workspaces to scan"
 
-    $modifiedRequestUrl = "workspaces/modified"
+    $modifiedRequestUrl = "admin/workspaces/modified"
 
     if ($config.Catalog.LastRun -and !$reset)
     {        
@@ -70,8 +77,8 @@ try
     Write-Host "Since: $($config.Catalog.LastRun)"
 
     # Get Modified Workspaces since last scan
-
-    $workspacesModified = @(Invoke-PBIRequest -authToken $authToken -resource $modifiedRequestUrl -admin)
+    
+    $workspacesModified = Invoke-PowerBIRestMethod -Url $modifiedRequestUrl -Method Get | ConvertFrom-Json
 
     if (!$workspacesModified)
     {
@@ -89,45 +96,21 @@ try
     # Call GetInfo to request workspace scan in batches of 100 (throtling after 500 calls per hour) https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_postworkspaceinfo
 
     do
-    {
-        try
-        {
-            $workspacesBatch = @($workspacesModified | Select -First $batchCount -Skip $skip)
+    {   
+        $workspacesBatch = @($workspacesModified | Select -First $batchCount -Skip $skip)
 
-            if ($workspacesBatch)
-            {
-                Write-Host "Requesting workspace scan: $($skip + $batchCount) / $($workspacesModified.Count)"
+        if ($workspacesBatch)
+        {
+            Write-Host "Requesting workspace scan: $($skip + $batchCount) / $($workspacesModified.Count)"
     
-                $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
+            $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
 
-                $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
+            $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
 
-                $workspacesScanRequests += Invoke-PBIRequest -authToken $authToken -resource "workspaces/getInfo?$getInfoDetails" -body $bodyStr -admin -method Post -Verbose
+            $workspacesScanRequests += (Invoke-PowerBIRestMethod -Url "admin/workspaces/getInfo?$getInfoDetails" -Body $bodyStr -method Post | ConvertFrom-Json)
 
-                $skip += $batchCount            
-            }
-        }
-        catch [System.Net.WebException]
-        {
-            $ex = $_.Exception
-
-            $statusCode = $ex.Response.StatusCode
-
-            if ($statusCode -eq 429)
-            {                              
-                $waitSeconds = [int]::Parse($ex.Response.Headers["Retry-After"])          
-
-                Write-Host "429 Throthling Error - Need to wait $waitSeconds seconds..."
-
-                Start-Sleep -Seconds ($waitSeconds + 5)
-
-                $authToken = Get-PBIAuthToken -clientId $config.ServicePrincipal.AppId -clientSecret $config.ServicePrincipal.AppSecret -tenantId $config.ServicePrincipal.TenantId
-            }
-            else
-            {
-                throw
-            }
-        }
+            $skip += $batchCount            
+        }       
     }
     while($workspacesBatch.Count -ne 0 -and $workspacesBatch.Count -ge $batchCount)
 
@@ -140,8 +123,8 @@ try
         Start-Sleep -Seconds 5
 
         foreach ($workspaceScanRequest in $workspacesScanRequests)
-        {
-            $scanStatus = Invoke-PBIRequest -authToken $authToken -resource "workspaces/scanStatus/$($workspaceScanRequest.id)" -admin -method Get
+        {            
+            $scanStatus = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanStatus/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
 
             Write-Host "Scan '$($scanStatus.id)' : '$($scanStatus.status)'"
 
@@ -149,53 +132,39 @@ try
         }
     }
 
-    # Get Scan results (500 requests per hour) - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanresult
-
-    $scansOutputPath = "$outputPath\scans"
-
-    New-Item $scansOutputPath -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
+    # Get Scan results (500 requests per hour) - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanresult    
 
     foreach ($workspaceScanRequest in $workspacesScanRequests)
-    {
-        try
-        {
-            $scanResult = Invoke-PBIRequest -authToken $authToken -resource "workspaces/scanResult/$($workspaceScanRequest.id)" -admin -method Get
+    {   
+        $scanResult = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanResult/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
 
-            Write-Host "Scan Result'$($scanStatus.id)' : '$($scanResult.workspaces.Count)'"
+        Write-Host "Scan Result'$($scanStatus.id)' : '$($scanResult.workspaces.Count)'"
 
-            $outputFilePath = "$scansOutputPath\$($workspaceScanRequest.id).json"
+        $outputFilePath = "$scansOutputPath\$($workspaceScanRequest.id).json"
 
-            $scanResult | Add-Member –MemberType NoteProperty –Name "scanCreatedDateTime"  –Value $workspaceScanRequest.createdDateTime -Force
+        $scanResult | Add-Member –MemberType NoteProperty –Name "scanCreatedDateTime"  –Value $workspaceScanRequest.createdDateTime -Force
 
-            ConvertTo-Json $scanResult -Depth 10 -Compress | Out-File $outputFilePath -force
-        }
-        catch [System.Net.WebException]
-        {
-            $ex = $_.Exception
+        ConvertTo-Json $scanResult -Depth 10 -Compress | Out-File $outputFilePath -force
 
-            $statusCode = $ex.Response.StatusCode
-
-            if ($statusCode -eq 429)
-            {                              
-                $waitSeconds = [int]::Parse($ex.Response.Headers["Retry-After"])          
-
-                Write-Host "429 Throthling Error - Need to wait $waitSeconds seconds..."
-
-                Start-Sleep -Seconds ($waitSeconds + 5)                
-
-                $authToken = Get-PBIAuthToken -clientId $config.ServicePrincipal.AppId -clientSecret $config.ServicePrincipal.AppSecret -tenantId $config.ServicePrincipal.TenantId
-            }
-            else
-            {
-                throw
-            }      
-        }
     }
 
     ConvertTo-Json $config | Out-File $configFilePath -force
 
     #endregion
 
+}
+catch
+{
+    $ex = $_.Exception
+
+    if ($ex.ToString().Contains("429 (Too Many Requests)"))
+    {
+        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
+    }  
+
+    Write-Host $ex.ToString() -ForegroundColor Red
+
+    throw
 }
 finally
 {

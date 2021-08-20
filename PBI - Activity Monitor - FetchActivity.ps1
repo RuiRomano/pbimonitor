@@ -1,4 +1,4 @@
-#Requires -Modules @{ ModuleName="PowerBIPS"; ModuleVersion="2.0.4.11" }
+#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt"; ModuleVersion="1.2.1026" }
 
 param(        
     $outputPath = ".\Data\Activity\{0:yyyy}\{0:MM}",   
@@ -23,7 +23,9 @@ else
 
 Write-Host "Getting OAuth Token"
 
-$authToken = Get-PBIAuthToken -clientId $config.ServicePrincipal.AppId -clientSecret $config.ServicePrincipal.AppSecret -tenantId $config.ServicePrincipal.TenantId
+$credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+
+Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
 
 if ($config.Activity.LastRun)
 {
@@ -45,9 +47,7 @@ while($pivotDate -le [datetime]::UtcNow)
 
     $outputFilePath = ("$outputPath\{0:yyyyMMdd}.json" -f $pivotDate)
 
-    $odataParams = "startDateTime='$($pivotDate.ToString("s"))'&endDateTime='$($pivotDate.AddHours(24).AddSeconds(-1).ToString("s"))'"
-    
-    $audits = @(Invoke-PBIRequest -authToken $authToken -resource "activityevents" -admin -odataParams $odataParams)
+    $audits = Get-PowerBIActivityEvent -StartDateTime $pivotDate.ToString("s") -EndDateTime $pivotDate.AddHours(24).AddSeconds(-1).ToString("s") | ConvertFrom-Json
 
     if ($audits.Count -gt 0)
     {
@@ -55,7 +55,7 @@ while($pivotDate -le [datetime]::UtcNow)
 
         New-Item -Path (Split-Path $outputFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
 
-        ConvertTo-Json $audits -Compress -Depth 5 | Out-File $outputFilePath -force
+        $audits | ConvertTo-Json -Compress -Depth 5 | Out-File $outputFilePath -force
     }
     else
     {

@@ -1,5 +1,4 @@
-﻿#Requires -Modules @{ ModuleName="PowerBIPS"; ModuleVersion="2.0.4.11" }
-#ReadMe - This Script assumes the service principal on the config file is a Member on the workspaces
+﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt"; ModuleVersion="1.2.1026" }
 
 param(          
     $outputPath = (".\Data\DataRefresh\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today),
@@ -36,7 +35,9 @@ try
         throw "Cannot find config file '$configFilePath'"
     }
 
-    $authToken = Get-PBIAuthToken -clientId $config.ServicePrincipal.AppId -clientSecret $config.ServicePrincipal.AppSecret -tenantId $config.ServicePrincipal.TenantId
+    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+
+    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
 
     #region Workspace Users
 
@@ -46,10 +47,13 @@ try
 
     if (!(Test-Path $workspacesFilePath))
     {
-        $workspaces = @(Invoke-PBIRequest -authToken $authToken -resource "groups" -odataParams "`$expand=datasets,users" -batchCount 5000 -admin)       
+        # TODO - Limited to 5000 workspaces, if more need to loop using $top & $skip
+
+        $workspaces = Invoke-PowerBIRestMethod -Url "admin/groups?`$expand=users,datasets&`$top=5000" -Method Get | ConvertFrom-Json      
+
+        $workspaces = $workspaces.value        
 
         $workspaces | ConvertTo-Json -Depth 5 -Compress | Out-File $workspacesFilePath        
-
     }
     else
     {
@@ -100,7 +104,9 @@ try
 
                 Write-Host "Getting refresh history"
 
-                $dsRefreshHistory = Invoke-PBIRequest -authToken $authToken -resource "datasets/$($dataset.id)/refreshes" -groupId $workspace.id
+                $dsRefreshHistory = Invoke-PowerBIRestMethod -Url "groups/$($workspace.id)/datasets/$($dataset.id)/refreshes" -Method Get | ConvertFrom-Json
+
+                $dsRefreshHistory = $dsRefreshHistory.value
 
                 if ($dsRefreshHistory)
                 {

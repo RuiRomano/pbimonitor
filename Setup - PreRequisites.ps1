@@ -1,3 +1,3 @@
 #Requires -RunAsAdministrator
 
-Install-Module PowerBIPS -MinimumVersion "2.0.4.11"
+Install-Module MicrosoftPowerBIMgmt -MinimumVersion "1.2.1026"
