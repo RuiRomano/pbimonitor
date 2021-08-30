@@ -46,13 +46,13 @@ try
     $workspacesFilePath = "$tempPath\workspaces.datasets.json"    
 
     if (!(Test-Path $workspacesFilePath))
-    {
+    {        
         # TODO - Limited to 5000 workspaces, if more need to loop using $top & $skip
 
-        $workspaces = Invoke-PowerBIRestMethod -Url "admin/groups?`$expand=users,datasets&`$top=5000" -Method Get | ConvertFrom-Json      
-
-        $workspaces = $workspaces.value        
-
+        #$workspaces = Invoke-PowerBIRestMethod -Url "admin/groups?`$expand=users,datasets&`$top=5000" -Method Get | ConvertFrom-Json            
+        #$workspaces = $workspaces.value  
+        $workspaces = Get-PowerBIWorkspace -Scope Organization -All -Include Datasets
+             
         $workspaces | ConvertTo-Json -Depth 5 -Compress | Out-File $workspacesFilePath        
     }
     else
