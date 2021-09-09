@@ -5,68 +5,93 @@ param(
     $configFilePath = ".\Config.json"
 )
 
-$VerbosePreference = "SilentlyContinue"
-$ErrorActionPreference = "Stop"
-
-$currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
-
-Set-Location $currentPath
-
-if (Test-Path $configFilePath)
+try
 {
-    $config = Get-Content $configFilePath | ConvertFrom-Json
-}
-else
-{
-    throw "Cannot find config file '$configFilePath'"
-}
+    Write-Host "Starting Power BI Activity Monitor Activity Fetch"
 
-Write-Host "Getting OAuth Token"
+    $stopwatch = [System.Diagnostics.Stopwatch]::new()
+    $stopwatch.Start()   
 
-$credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
 
-Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
+    Set-Location $currentPath
 
-if ($config.Activity.LastRun)
-{
-    $pivotDate = [datetime]::Parse($config.Activity.LastRun).ToUniversalTime()
-}
-else
-{
-    $config | Add-Member -NotePropertyName "Activity" -NotePropertyValue @{"LastRun" = $null } -Force   
-
-    $pivotDate = [datetime]::UtcNow.Date.AddDays(-30)
-}
-
-
-# Gets audit data daily
-
-while($pivotDate -le [datetime]::UtcNow)
-{           
-    Write-Host "Getting audit data for: '$($pivotDate.ToString("yyyyMMdd"))'"
-
-    $outputFilePath = ("$outputPath\{0:yyyyMMdd}.json" -f $pivotDate)
-
-    $audits = Get-PowerBIActivityEvent -StartDateTime $pivotDate.ToString("s") -EndDateTime $pivotDate.AddHours(24).AddSeconds(-1).ToString("s") | ConvertFrom-Json
-
-    if ($audits.Count -gt 0)
+    if (Test-Path $configFilePath)
     {
-        Write-Host "'$($audits.Count)' audits"
-
-        New-Item -Path (Split-Path $outputFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
-
-        $audits | ConvertTo-Json -Compress -Depth 5 | Out-File $outputFilePath -force
+        $config = Get-Content $configFilePath | ConvertFrom-Json
     }
     else
     {
-        Write-Warning "No audit logs for date: '$($pivotDate.ToString("yyyyMMdd"))'"
+        throw "Cannot find config file '$configFilePath'"
     }
 
-    $config.Activity.LastRun = $pivotDate.Date.ToString("o")
+    Write-Host "Getting OAuth Token"
 
-    $pivotDate = $pivotDate.AddDays(1)
+    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
-    # Save config 
+    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
 
-    ConvertTo-Json $config | Out-File $configFilePath -force
+    if ($config.Activity.LastRun)
+    {
+        $pivotDate = [datetime]::Parse($config.Activity.LastRun).ToUniversalTime()
+    }
+    else
+    {
+        $config | Add-Member -NotePropertyName "Activity" -NotePropertyValue @{"LastRun" = $null } -Force   
+
+        $pivotDate = [datetime]::UtcNow.Date.AddDays(-30)
+    }
+
+
+    # Gets audit data daily
+
+    while($pivotDate -le [datetime]::UtcNow)
+    {           
+        Write-Host "Getting audit data for: '$($pivotDate.ToString("yyyyMMdd"))'"
+
+        $outputFilePath = ("$outputPath\{0:yyyyMMdd}.json" -f $pivotDate)
+
+        $audits = Get-PowerBIActivityEvent -StartDateTime $pivotDate.ToString("s") -EndDateTime $pivotDate.AddHours(24).AddSeconds(-1).ToString("s") | ConvertFrom-Json
+
+        if ($audits.Count -gt 0)
+        {
+            Write-Host "'$($audits.Count)' audits"
+
+            New-Item -Path (Split-Path $outputFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
+
+            $audits | ConvertTo-Json -Compress -Depth 5 | Out-File $outputFilePath -force
+        }
+        else
+        {
+            Write-Warning "No audit logs for date: '$($pivotDate.ToString("yyyyMMdd"))'"
+        }
+
+        $config.Activity.LastRun = $pivotDate.Date.ToString("o")
+
+        $pivotDate = $pivotDate.AddDays(1)
+
+        # Save config 
+
+        ConvertTo-Json $config | Out-File $configFilePath -force
+    }
+
+}
+catch
+{
+    $ex = $_.Exception
+
+    if ($ex.ToString().Contains("429 (Too Many Requests)"))
+    {
+        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
+    }  
+
+    Write-Host $ex.ToString() -ForegroundColor Red
+
+    throw
+}
+finally
+{
+    $stopwatch.Stop()
+
+    Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
 }

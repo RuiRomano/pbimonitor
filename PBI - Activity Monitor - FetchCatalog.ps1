@@ -6,11 +6,10 @@ param(
     $reset = $false
 )
 
-$ErrorActionPreference = "Stop"
-$VerbosePreference = "Continue"
-
 try
 {
+    Write-Host "Starting Power BI Activity Monitor Catalog Fetch"
+
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
 

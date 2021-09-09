@@ -134,52 +134,77 @@ function Read-FromGraphAPI
 
 #endregion
 
-$ErrorActionPreference = "Stop"
-$VerbosePreference = "SilentlyContinue"
-
-Add-Type -AssemblyName System.Web
-
-$currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
-
-Set-Location $currentPath
-
-# ensure folder
-
-New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
-
-if (Test-Path $configFilePath)
+try
 {
-    $config = Get-Content $configFilePath | ConvertFrom-Json
+    Write-Host "Starting Power BI Activity Monitor Graph Fetch"
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::new()
+    $stopwatch.Start()   
+
+    Add-Type -AssemblyName System.Web
+
+    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
+
+    Set-Location $currentPath
+
+    # ensure folder
+
+    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
+
+    if (Test-Path $configFilePath)
+    {
+        $config = Get-Content $configFilePath | ConvertFrom-Json
+    }
+    else
+    {
+        throw "Cannot find config file '$configFilePath'"
+    }
+
+    # Get the authentication token
+
+    Write-Host "Getting OAuth token"
+
+    $authToken = Get-AuthToken -resource "https://graph.microsoft.com" -appid $config.ServicePrincipal.AppId -appsecret $config.ServicePrincipal.AppSecret -tenantid $config.ServicePrincipal.TenantId
+
+    $graphUrl = "https://graph.microsoft.com/beta"
+
+    # Get Users & Assigned Licenses
+
+    Write-Host "Getting Users from Graph"
+
+    $users = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/users?`$select=id,mail,companyName,displayName,assignedLicenses,onPremisesUserPrincipalName,UserPrincipalName,jobTitle,userType" 
+
+    $filePath = "$outputPath\users.json"
+
+    $users | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force 
+
+    # Get Skus & license count
+
+    Write-Host "Getting SKUs from Graph"
+
+    $skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits"
+
+    $filePath = "$outputPath\subscribedSkus.json"
+
+    $skus | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
+
 }
-else
+catch
 {
-    throw "Cannot find config file '$configFilePath'"
+    $ex = $_.Exception
+
+    if ($ex.ToString().Contains("429 (Too Many Requests)"))
+    {
+        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
+    }  
+
+    Write-Host $ex.ToString() -ForegroundColor Red
+
+    throw
 }
+finally
+{
+    $stopwatch.Stop()
 
-# Get the authentication token
-
-Write-Host "Getting OAuth token"
-
-$authToken = Get-AuthToken -resource "https://graph.microsoft.com" -appid $config.ServicePrincipal.AppId -appsecret $config.ServicePrincipal.AppSecret -tenantid $config.ServicePrincipal.TenantId
-
-$graphUrl = "https://graph.microsoft.com/beta"
-
-# Get Users & Assigned Licenses
-
-Write-Host "Getting Users from Graph"
-
-$users = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/users?`$select=id,mail,companyName,displayName,assignedLicenses,onPremisesUserPrincipalName,UserPrincipalName,jobTitle,userType" 
-
-$filePath = "$outputPath\users.json"
-
-$users | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force 
-
-# Get Skus & license count
-
-Write-Host "Getting SKUs from Graph"
-
-$skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits"
-
-$filePath = "$outputPath\subscribedSkus.json"
-
-$skus | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
+    Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
+}

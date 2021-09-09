@@ -2,7 +2,8 @@
 
 param(          
     $outputPath = (".\Data\DataRefresh\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today),
-    $configFilePath = ".\Config.json",    
+    $configFilePath = ".\Config.json", 
+    $credentialPrompt = $false,     
     $workspaceFilter = @()
 )
 
@@ -35,22 +36,47 @@ try
         throw "Cannot find config file '$configFilePath'"
     }
 
-    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+    if (!$credentialPrompt)
+    {
+        if (Test-Path $configFilePath)
+        {
+            $config = Get-Content $configFilePath | ConvertFrom-Json
+        }
+        else
+        {
+            throw "Cannot find config file '$configFilePath'"
+        }
 
-    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
+        $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+
+        Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
+    }
+    else
+    {
+        Connect-PowerBIServiceAccount
+    }
+
+    # Find Token Object Id, by decoding OAUTH TOken - https://blog.kloud.com.au/2019/07/31/jwtdetails-powershell-module-for-decoding-jwt-access-tokens-with-readable-token-expiry-time/
+    $token = (Get-PowerBIAccessToken -AsString).Split(" ")[1]
+    $tokenPayload = $token.Split(".")[1].Replace('-', '+').Replace('_', '/')
+    while ($tokenPayload.Length % 4) { $tokenPayload += "=" }
+    $tokenPayload = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($tokenPayload)) | ConvertFrom-Json
+    $pbiUserIdentifier = $tokenPayload.oid
+
+    # If its a credential prompt the user identifier is the UPN and not the ObjectId
+    if ($credentialPrompt)
+    {
+        $pbiUserIdentifier = $tokenPayload.upn
+    }
 
     #region Workspace Users
 
-    # Get workspaces + users (need this because users dont come in the async api)
+    # Get workspaces + users 
 
     $workspacesFilePath = "$tempPath\workspaces.datasets.json"    
 
     if (!(Test-Path $workspacesFilePath))
     {        
-        # TODO - Limited to 5000 workspaces, if more need to loop using $top & $skip
-
-        #$workspaces = Invoke-PowerBIRestMethod -Url "admin/groups?`$expand=users,datasets&`$top=5000" -Method Get | ConvertFrom-Json            
-        #$workspaces = $workspaces.value  
         $workspaces = Get-PowerBIWorkspace -Scope Organization -All -Include Datasets
              
         $workspaces | ConvertTo-Json -Depth 5 -Compress | Out-File $workspacesFilePath        
@@ -64,12 +90,10 @@ try
 
     Write-Host "Workspaces: $($workspaces.Count)"
 
-    if ($config.ServicePrincipal.AppObjectId)
-    {
-        $workspaces = $workspaces |? { $_.users |? { $_.identifier -ieq $config.ServicePrincipal.AppObjectId } }
+    $workspaces = $workspaces |? { $_.users |? { $_.identifier -ieq $pbiUserIdentifier } }
 
-        Write-Host "Workspaces with granted permission: $($workspaces.Count)"
-    }
+    Write-Host "Workspaces where user is a member: $($workspaces.Count)"
+
     # Only look at Active, V2 Workspaces and with Datasets
 
     $workspaces = @($workspaces |? {$_.type -eq "Workspace" -and $_.state -eq "Active" -and $_.datasets.Count -gt 0})
@@ -80,10 +104,10 @@ try
     }
 
     Write-Host "Workspaces to get refresh history: $($workspaces.Count)"
-   
+
     $total = $Workspaces.Count
     $item = 0
-        
+
     foreach($workspace in $Workspaces)
     {          
         $item++
@@ -106,10 +130,10 @@ try
 
                 $dsRefreshHistory = Invoke-PowerBIRestMethod -Url "groups/$($workspace.id)/datasets/$($dataset.id)/refreshes" -Method Get | ConvertFrom-Json
 
-                $dsRefreshHistory = $dsRefreshHistory.value
+                $dsRefreshHistory = $dsRefreshHistory.value               
 
                 if ($dsRefreshHistory)
-                {
+                {              
                     $dsRefreshHistory = $dsRefreshHistory | Select *, @{Name="dataSetId"; Expression={ $dataset.id }}, @{Name="dataSet"; Expression={ $dataset.name }}`
                         , @{Name="group"; Expression={ $workspace.name }}, @{Name="configuredBy"; Expression={ $dataset.configuredBy }} `                        
 
@@ -137,7 +161,7 @@ try
     
     if ($dsRefreshHistoryGlobal.Count -gt 0)
     {
-        $dsRefreshHistoryGlobal | ConvertTo-Json -Depth 5 | Out-File "$outputPath\workspaces.datasets.refreshes.json" -Force 
+        $dsRefreshHistoryGlobal | ConvertTo-Json | Out-File "$outputPath\workspaces.datasets.refreshes.json" -Force 
     }
 }
 finally
