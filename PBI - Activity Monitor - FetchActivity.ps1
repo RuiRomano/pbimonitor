@@ -53,7 +53,10 @@ try
 
         $audits = Get-PowerBIActivityEvent -StartDateTime $pivotDate.ToString("s") -EndDateTime $pivotDate.AddHours(24).AddSeconds(-1).ToString("s") | ConvertFrom-Json
 
-        $audits = @($audits[0])
+        if (!($audits -is [array]))
+        {
+            $audits = @($audits)
+        }
 
         if ($audits.Count -gt 0)
         {
@@ -61,7 +64,7 @@ try
 
             New-Item -Path (Split-Path $outputFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
 
-            ConvertTo-Json $audits -Compress -Depth 5 | Out-File $outputFilePath -force
+            ConvertTo-Json @($audits) -Compress -Depth 5 | Out-File $outputFilePath -force
         }
         else
         {
