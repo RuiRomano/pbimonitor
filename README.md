@@ -1,3 +1,7 @@
+# Session Slides
+PBI Monitoring 101 Session Slides: [here](https://github.com/RuiRomano/sessionslides/blob/main/PBIMonitoring101.pdf)
+
+
 # Setup
 
 1. Run "Setup - PreRequisites.ps1" (as admin)
