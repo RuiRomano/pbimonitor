@@ -172,7 +172,7 @@ try
 
     Write-Host "Getting Users from Graph"
 
-    $users = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/users?`$select=id,mail,companyName,displayName,assignedLicenses,onPremisesUserPrincipalName,UserPrincipalName,jobTitle,userType" 
+    $users = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/users?`$select=id,mail,companyName,displayName,assignedLicenses,onPremisesUserPrincipalName,UserPrincipalName,jobTitle,userType" | select * -ExcludeProperty "@odata.id"
 
     $filePath = "$outputPath\users.json"
 
@@ -182,11 +182,42 @@ try
 
     Write-Host "Getting SKUs from Graph"
 
-    $skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits"
+    $skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits" | select * -ExcludeProperty "@odata.id"    
 
     $filePath = "$outputPath\subscribedSkus.json"
 
     $skus | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
+
+<#
+    Write-Host "Get AD Groups"
+
+    $groups = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/groups?`$expand=members&`$select=id,description,displayName,createdDateTime,deletedDateTime,groupTypes"
+
+    $groups = $groups | select * -ExcludeProperty "@odata.id"    
+
+    $filePath = "$outputPath\groups.json"
+
+    $groups | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
+
+    $groupsWithMoreThan20Members = $groups |? { $_.members.Count -eq 20 }
+
+    $groupsMembers = @()
+
+    Write-Host "Get Group Members from $($groupsWithMoreThan20Members.Count) groups"
+
+    foreach($group in $groupsWithMoreThan20Members)
+    {        
+        $groupMembers = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/groups/$($group.id)/members?`$select=id" | Select id,  @{n='groupId';e={$group.id}}
+
+        $groupsMembers += $groupMembers
+    
+    }
+    
+    $filePath = "$outputPath\groupsmembers.json"
+
+    $groupsMembers | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
+
+#>
 
 }
 catch
