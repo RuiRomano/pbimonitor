@@ -5,7 +5,7 @@ PBI Monitoring 101 Session Slides: [here](https://github.com/RuiRomano/sessionsl
 # Setup
 
 1. Run "Setup - PreRequisites.ps1" (as admin)
-2. Create a Service Principal (see slide 14 of [Presentation Slides](PBIMonitoring101.pdf#presentation))
+2. Create a Service Principal (see slide 14 of [Presentation Slides](https://github.com/RuiRomano/sessionslides/blob/main/PBIMonitoring101.pdf#presentation))
 3. Write the Service Principal AppId, AppSecret & Tenant ID on the configuration file: \Config.json
 4. Run the powershell scripts
 5. Open the Power BI Template files and configure the parameter to target the '\data' folder
