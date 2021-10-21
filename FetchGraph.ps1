@@ -1,4 +1,5 @@
 param(        
+    [psobject]$config,
     $outputPath = (".\Data\Graph\{0:yyyy}/{0:MM}/{0:dd}" -f [datetime]::Today),
     $configFilePath = ".\Config.json"
 )
@@ -136,29 +137,18 @@ function Read-FromGraphAPI
 
 try
 {
-    Write-Host "Starting Power BI Activity Monitor Graph Fetch"
+    Write-Host "Starting Graph API Fetch"
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
 
     Add-Type -AssemblyName System.Web
 
-    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
-
-    Set-Location $currentPath
+    $outputPath = ("$($config.OutputPath)\Graph\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
 
     # ensure folder
 
     New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
-
-    if (Test-Path $configFilePath)
-    {
-        $config = Get-Content $configFilePath | ConvertFrom-Json
-    }
-    else
-    {
-        throw "Cannot find config file '$configFilePath'"
-    }
 
     # Get the authentication token
 
@@ -176,7 +166,7 @@ try
 
     $filePath = "$outputPath\users.json"
 
-    $users | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force 
+    ConvertTo-Json @($users) -Compress -Depth 5 | Out-File $filePath -Force 
 
     # Get Skus & license count
 
@@ -185,8 +175,8 @@ try
     $skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits" | select * -ExcludeProperty "@odata.id"    
 
     $filePath = "$outputPath\subscribedSkus.json"
-
-    $skus | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
+    
+    ConvertTo-Json @($skus) -Compress -Depth 5 | Out-File $filePath -Force
 
 <#
     Write-Host "Get AD Groups"
@@ -215,7 +205,7 @@ try
     
     $filePath = "$outputPath\groupsmembers.json"
 
-    $groupsMembers | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
+    ConvertTo-Json @($groupsMembers) -Compress -Depth 5 | Out-File $filePath -Force
 
 #>
 
@@ -229,7 +219,7 @@ catch
         Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
     }  
 
-    Write-Host $ex.ToString() -ForegroundColor Red
+    Write-Host $ex.ToString()
 
     throw
 }

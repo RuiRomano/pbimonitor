@@ -1,44 +1,40 @@
-﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt"; ModuleVersion="1.2.1026" }
+﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Profile"; ModuleVersion="1.2.1026" }
 
-param(        
-    $outputPath = ".\Data\Catalog",    
-    $configFilePath = ".\Config.json",
+param(               
+    [psobject]$config,
     $reset = $false
 )
 
 try
 {
-    Write-Host "Starting Power BI Activity Monitor Catalog Fetch"
+    Write-Host "Starting Power BI Catalog Fetch"
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
 
-    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
+    $outputPath = "$($config.OutputPath)\Catalog"    
+    $stateFilePath = "$($config.OutputPath)\state.json"
 
-    Set-Location $currentPath
+    if (Test-Path $stateFilePath) {
+        $state = Get-Content $stateFilePath | ConvertFrom-Json
+    }
+    else {
+        $state = New-Object psobject 
+    }
 
-    # ensure folder
- 
+    # ensure folders
+    
     $scansOutputPath = Join-Path $outputPath ("scans\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
     $snapshotOutputPath = Join-Path $outputPath ("snapshots\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
 
     New-Item -ItemType Directory -Path $scansOutputPath -ErrorAction SilentlyContinue | Out-Null
     New-Item -ItemType Directory -Path $snapshotOutputPath -ErrorAction SilentlyContinue | Out-Null
 
-    
-    if (Test-Path $configFilePath)
-    {
-        $config = Get-Content $configFilePath | ConvertFrom-Json
-    }
-    else
-    {
-        throw "Cannot find config file '$configFilePath'"
-    }
-
+    Write-Host "Getting OAuth Token"
 
     $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
-    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
+    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
 
     #region ADMIN API    
 
@@ -46,9 +42,19 @@ try
 
     if (!(Test-Path $filePath))
     {     
+        Write-Host "Getting Power BI Apps List"
+        
         $result = Invoke-PowerBIRestMethod -Url "admin/apps?`$top=5000&`$skip=0 " -Method Get | ConvertFrom-Json
 
-        @($result.value) | ConvertTo-Json -Depth 5 -Compress | Out-File $filePath
+        $result = @($result.value)
+
+        if ($result.Count -ne 0)
+        {
+            ConvertTo-Json $result -Depth 10 -Compress | Out-File $filePath -force
+        }
+        else {
+            Write-Host "Tenant without PowerBI apps"
+        }
     }
     else
     {
@@ -63,17 +69,21 @@ try
 
     $modifiedRequestUrl = "admin/workspaces/modified"
 
-    if ($config.Catalog.LastRun -and !$reset)
+    if ($state.Catalog.LastRun -and !$reset)
     {        
-        $modifiedRequestUrl = $modifiedRequestUrl + "?modifiedSince=$($config.Catalog.LastRun)"
+        if (!($state.Catalog.LastRun -is [datetime]))
+        {
+            $state.Catalog.LastRun = [datetime]::Parse($state.Catalog.LastRun).ToUniversalTime()
+        }
+
+        $modifiedRequestUrl = $modifiedRequestUrl + "?modifiedSince=$($state.Catalog.LastRun.ToString("o"))"
     }
-    else
-    {
-        $config | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null } -Force       
+    else {
+        $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null} -Force
     }
 
     Write-Host "Reset: $reset"
-    Write-Host "Since: $($config.Catalog.LastRun)"
+    Write-Host "Since: $($state.Catalog.LastRun)"
 
     # Get Modified Workspaces since last scan
     
@@ -84,16 +94,13 @@ try
         Write-Host "No workspaces modified"
     }
 
-    Write-Host "Modified workspaces: $($workspacesModified.Count)"
-
-    $config.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
+    Write-Host "Modified workspaces: $($workspacesModified.Count)"    
 
     $skip = 0
     $batchCount = 100
     $workspacesScanRequests = @()
 
     # Call GetInfo to request workspace scan in batches of 100 (throtling after 500 calls per hour) https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_postworkspaceinfo
-
     do
     {   
         $workspacesBatch = @($workspacesModified | Select -First $batchCount -Skip $skip)
@@ -147,10 +154,13 @@ try
 
     }
 
-    ConvertTo-Json $config | Out-File $configFilePath -force
-
     #endregion
 
+    # Save State
+
+    $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
+
+    ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
 }
 catch
 {
@@ -161,8 +171,8 @@ catch
         Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
     }  
 
-    Write-Host $ex.ToString() -ForegroundColor Red
-
+    Resolve-PowerBIError -Last
+    
     throw
 }
 finally

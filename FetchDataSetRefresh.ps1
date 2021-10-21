@@ -1,9 +1,9 @@
-﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt"; ModuleVersion="1.2.1026" }
+﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Profile"; ModuleVersion="1.2.1026" }
+#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Workspaces"; ModuleVersion="1.2.1026" }
 
-param(          
-    $outputPath = (".\Data\DataRefresh\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today),
-    $configFilePath = ".\Config.json", 
-    $credentialPrompt = $false,     
+## README - This script will run with the configured ServicePrincipal, although there are no Admin API's for Schedule Refresh. To Ensure the ServicePrincipal is a member of all Workspaces run the tool "Tool - EnsureServicePrincipal.ps1"
+param(    
+    [psobject]$config,          
     $workspaceFilter = @()
 )
 
@@ -12,49 +12,25 @@ $VerbosePreference = "SilentlyContinue"
 
 try
 {
+    Write-Host "Starting Power BI Dataset Refresh History Fetch"
+
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
 
-
-    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
-
-    Set-Location $currentPath
-
     # ensure folder
 
+    $outputPath = ("$($config.OutputPath)\DataRefresh\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today) 
+    
     $tempPath = Join-Path $outputPath "_temp"
 
     New-Item -ItemType Directory -Path $tempPath -ErrorAction SilentlyContinue | Out-Null
     New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
-    
-    if (Test-Path $configFilePath)
-    {
-        $config = Get-Content $configFilePath | ConvertFrom-Json
-    }
-    else
-    {
-        throw "Cannot find config file '$configFilePath'"
-    }
 
-    if (!$credentialPrompt)
-    {
-        if (Test-Path $configFilePath)
-        {
-            $config = Get-Content $configFilePath | ConvertFrom-Json
-        }
-        else
-        {
-            throw "Cannot find config file '$configFilePath'"
-        }
+    Write-Host "Getting OAuth Token"
 
-        $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
-        Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
-    }
-    else
-    {
-        Connect-PowerBIServiceAccount
-    }
+    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
 
     # Find Token Object Id, by decoding OAUTH TOken - https://blog.kloud.com.au/2019/07/31/jwtdetails-powershell-module-for-decoding-jwt-access-tokens-with-readable-token-expiry-time/
     $token = (Get-PowerBIAccessToken -AsString).Split(" ")[1]
@@ -62,12 +38,6 @@ try
     while ($tokenPayload.Length % 4) { $tokenPayload += "=" }
     $tokenPayload = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($tokenPayload)) | ConvertFrom-Json
     $pbiUserIdentifier = $tokenPayload.oid
-
-    # If its a credential prompt the user identifier is the UPN and not the ObjectId
-    if ($credentialPrompt)
-    {
-        $pbiUserIdentifier = $tokenPayload.upn
-    }
 
     #region Workspace Users
 
@@ -160,9 +130,23 @@ try
     }
     
     if ($dsRefreshHistoryGlobal.Count -gt 0)
-    {
-        $dsRefreshHistoryGlobal | ConvertTo-Json | Out-File "$outputPath\workspaces.datasets.refreshes.json" -Force 
+    {        
+        $outputFilePath = "$outputPath\workspaces.datasets.refreshes.json"
+        ConvertTo-Json @($dsRefreshHistoryGlobal) -Compress -Depth 5 | Out-File $outputFilePath -force
     }
+}
+catch
+{
+    $ex = $_.Exception
+
+    if ($ex.ToString().Contains("429 (Too Many Requests)"))
+    {
+        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
+    }  
+
+    Resolve-PowerBIError -Last
+    
+    throw
 }
 finally
 {
