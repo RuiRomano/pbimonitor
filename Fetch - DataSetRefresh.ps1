@@ -30,8 +30,10 @@ try
 
     $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
-    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+    $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
 
+    Write-Host "Login with: $($pbiAccount.UserName)"
+    
     # Find Token Object Id, by decoding OAUTH TOken - https://blog.kloud.com.au/2019/07/31/jwtdetails-powershell-module-for-decoding-jwt-access-tokens-with-readable-token-expiry-time/
     $token = (Get-PowerBIAccessToken -AsString).Split(" ")[1]
     $tokenPayload = $token.Split(".")[1].Replace('-', '+').Replace('_', '/')
@@ -134,19 +136,6 @@ try
         $outputFilePath = "$outputPath\workspaces.datasets.refreshes.json"
         ConvertTo-Json @($dsRefreshHistoryGlobal) -Compress -Depth 5 | Out-File $outputFilePath -force
     }
-}
-catch
-{
-    $ex = $_.Exception
-
-    if ($ex.ToString().Contains("429 (Too Many Requests)"))
-    {
-        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
-    }  
-
-    Resolve-PowerBIError -Last
-    
-    throw
 }
 finally
 {

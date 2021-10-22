@@ -1,7 +1,5 @@
 param(        
-    [psobject]$config,
-    $outputPath = (".\Data\Graph\{0:yyyy}/{0:MM}/{0:dd}" -f [datetime]::Today),
-    $configFilePath = ".\Config.json"
+    [psobject]$config    
 )
 
 #region Graph API Helper Functions
@@ -206,22 +204,8 @@ try
     $filePath = "$outputPath\groupsmembers.json"
 
     ConvertTo-Json @($groupsMembers) -Compress -Depth 5 | Out-File $filePath -Force
-
 #>
 
-}
-catch
-{
-    $ex = $_.Exception
-
-    if ($ex.ToString().Contains("429 (Too Many Requests)"))
-    {
-        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
-    }  
-
-    Write-Host $ex.ToString()
-
-    throw
 }
 finally
 {

@@ -17,3 +17,9 @@ ServicePrincipal.json
 *.pbix
 /Config*.json
 /debug.log
+
+*/data/*
+
+/Publish
+
+Test -*.ps1

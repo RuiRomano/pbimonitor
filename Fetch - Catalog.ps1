@@ -1,8 +1,11 @@
 ﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Profile"; ModuleVersion="1.2.1026" }
 
 param(               
-    [psobject]$config,
-    $reset = $false
+    [psobject]$config
+    ,
+    [bool]$reset = $false
+    ,
+    [string]$stateFilePath
 )
 
 try
@@ -13,7 +16,11 @@ try
     $stopwatch.Start()   
 
     $outputPath = "$($config.OutputPath)\Catalog"    
-    $stateFilePath = "$($config.OutputPath)\state.json"
+    
+    if (!$stateFilePath)
+    {
+        $stateFilePath = "$($config.OutputPath)\state.json"
+    }    
 
     if (Test-Path $stateFilePath) {
         $state = Get-Content $stateFilePath | ConvertFrom-Json
@@ -34,7 +41,9 @@ try
 
     $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
-    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+    $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+
+    Write-Host "Login with: $($pbiAccount.UserName)"
 
     #region ADMIN API    
 
@@ -158,22 +167,11 @@ try
 
     # Save State
 
+    New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
+
     $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
 
     ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
-}
-catch
-{
-    $ex = $_.Exception
-
-    if ($ex.ToString().Contains("429 (Too Many Requests)"))
-    {
-        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
-    }  
-
-    Resolve-PowerBIError -Last
-    
-    throw
 }
 finally
 {

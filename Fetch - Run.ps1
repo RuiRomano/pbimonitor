@@ -2,6 +2,8 @@ $ErrorActionPreference = "Stop"
 
 $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
 
+Write-Host "Current Path: $currentPath"
+
 Set-Location $currentPath
 
 $configFilePath = "$currentPath\Config-Test.json"
@@ -27,10 +29,24 @@ else
     throw "Cannot find config file '$configFilePath'"
 }
 
-& .\FetchActivity.ps1 -config $config
+try {
+    & ".\Fetch - Activity.ps1" -config $config
+    
+    & ".\Fetch - Catalog.ps1" -config $config
 
-& .\FetchCatalog.ps1 -config $config
+    & ".\Fetch - Graph.ps1" -config $config
 
-& .\FetchGraph.ps1 -config $config
+    & ".\Fetch - DataSetRefresh.ps1" -config $config
+}
+catch {
 
-& .\FetchDataSetRefresh.ps1 -config $config
+    $ex = $_.Exception
+
+    if ($ex.ToString().Contains("429 (Too Many Requests)")) {
+        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
+    }  
+
+    Resolve-PowerBIError -Last
+
+    throw    
+}

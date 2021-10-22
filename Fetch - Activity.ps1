@@ -2,7 +2,9 @@
 #Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Admin"; ModuleVersion="1.2.1026" }
 
 param(               
-    [psobject]$config    
+    [psobject]$config
+    ,
+    [string]$stateFilePath    
 )
 
 try {
@@ -11,8 +13,14 @@ try {
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
 
+    New-Item -ItemType Directory -Path $config.OutputPath -ErrorAction SilentlyContinue | Out-Null
+
     $outputPath = "$($config.OutputPath)\Activity\{0:yyyy}\{0:MM}"    
-    $stateFilePath = "$($config.OutputPath)\state.json"
+    
+    if (!$stateFilePath)
+    {
+        $stateFilePath = "$($config.OutputPath)\state.json"
+    }
 
     if (Test-Path $stateFilePath) {
         $state = Get-Content $stateFilePath | ConvertFrom-Json
@@ -20,7 +28,7 @@ try {
     else {
         $state = New-Object psobject 
     }
-
+    
     if ($state.Activity.LastRun) {
         if (!($state.Activity.LastRun -is [datetime]))
         {
@@ -39,7 +47,9 @@ try {
 
     $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
-    Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+    $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+
+    Write-Host "Login with: $($pbiAccount.UserName)"
 
     # Gets audit data for each day
 
@@ -71,20 +81,11 @@ try {
 
         # Save state 
 
+        New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
+        
         ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
     }
 
-}
-catch {
-    $ex = $_.Exception
-
-    if ($ex.ToString().Contains("429 (Too Many Requests)")) {
-        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
-    }  
-
-    Resolve-PowerBIError -Last
-
-    throw
 }
 finally {
     $stopwatch.Stop()
