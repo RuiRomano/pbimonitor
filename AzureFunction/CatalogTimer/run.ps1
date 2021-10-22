@@ -2,6 +2,8 @@
 
 param($Timer)
 
+$global:erroractionpreference = 1
+
 try
 {
     # Get the current universal time in the default string format.
@@ -13,38 +15,37 @@ try
 
     Write-Host "PBIMonitor - Fetch Catalog Started: $currentUTCtime"
         
-    $appDataPath = $env:APPSETTING_PBIMONITOR_AppDataPath
-    $outputPath = "$($env:temp)\PBIMonitorData\$([guid]::NewGuid().ToString("n"))"
-    $scriptsPath = $env:APPSETTING_PBIMONITOR_ScriptsPath
-    
-    Import-Module "$scriptsPath\Fetch - Utils.psm1" -Force
-    
-    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
-    
-    Write-Host "Output Path: $outputPath"
+    $appDataPath = $env:PBIMONITOR_AppDataPath
+    $outputPath = $env:PBIMONITOR_DataPath
+    if (!$outputPath)
+    {
+        $outputPath = "$($env:temp)\PBIMonitorData\$([guid]::NewGuid().ToString("n"))"
+    }
+    $scriptsPath = $env:PBIMONITOR_ScriptsPath
     
     $config = @{
         "OutputPath" = $outputPath;
+        "StorageAccountConnStr" = $env:AzureWebJobsStorage;
+        "StorageAccountContainerName" = "pbimonitor";
+        "StorageAccountContainerRootPath" = "raw"
         "ServicePrincipal" = @{
-            "AppId" = $env:APPSETTING_PBIMONITOR_ServicePrincipalId;
-            "AppSecret" = $env:APPSETTING_PBIMONITOR_ServicePrincipalSecret;
-            "TenantId" = $env:APPSETTING_PBIMONITOR_ServicePrincipalTenantId;
-            "Environment" = $env:APPSETTING_PBIMONITOR_ServicePrincipalEnvironment;
+            "AppId" = $env:PBIMONITOR_ServicePrincipalId;
+            "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;
+            "TenantId" = $env:PBIMONITOR_ServicePrincipalTenantId;
+            "Environment" = $env:PBIMONITOR_ServicePrincipalEnvironment;
         }
     }
+
+    Write-Host "Scripts Path: $scriptsPath"          
+    Write-Host "Output Path: $outputPath"
+
+    Import-Module "$scriptsPath\Fetch - Utils.psm1" -Force
+    
+    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null    
     
     $stateFilePath = "$appDataPath\state.json"
     
     & "$scriptsPath\Fetch - Catalog.ps1" -config $config -stateFilePath $stateFilePath
-    
-    Write-Host "Writing to Blob Storage"
-    
-    $storageAccountConnStr = $env:APPSETTING_AzureWebJobsStorage
-    $storageContainerName = "pbimonitor"
-    $storageRootPath = "raw/catalog"
-    $dataFolderPath = "$outputPath\Catalog"
-    
-    Add-FolderToBlobStorage -storageAccountConnStr $storageAccountConnStr -storageContainerName $storageContainerName -storageRootPath $storageRootPath -folderPath $dataFolderPath
     
     Write-Host "End"    
 }

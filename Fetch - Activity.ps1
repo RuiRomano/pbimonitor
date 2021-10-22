@@ -13,13 +13,13 @@ try {
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
 
-    New-Item -ItemType Directory -Path $config.OutputPath -ErrorAction SilentlyContinue | Out-Null
+    $rootOutputPath = $config.OutputPath
+    New-Item -ItemType Directory -Path $rootOutputPath -ErrorAction SilentlyContinue | Out-Null
 
-    $outputPath = "$($config.OutputPath)\Activity\{0:yyyy}\{0:MM}"    
+    $outputPath = "$rootOutputPath\Activity\{0:yyyy}\{0:MM}"    
     
-    if (!$stateFilePath)
-    {
-        $stateFilePath = "$($config.OutputPath)\state.json"
+    if (!$stateFilePath) {
+        $stateFilePath = "$rootOutputPath\state.json"
     }
 
     if (Test-Path $stateFilePath) {
@@ -30,14 +30,13 @@ try {
     }
     
     if ($state.Activity.LastRun) {
-        if (!($state.Activity.LastRun -is [datetime]))
-        {
+        if (!($state.Activity.LastRun -is [datetime])) {
             $state.Activity.LastRun = [datetime]::Parse($state.Activity.LastRun).ToUniversalTime()
         }
         $pivotDate = $state.Activity.LastRun
     }
     else {
-        $state | Add-Member -NotePropertyName "Activity" -NotePropertyValue @{"LastRun" = $null} -Force
+        $state | Add-Member -NotePropertyName "Activity" -NotePropertyValue @{"LastRun" = $null } -Force
         $pivotDate = [datetime]::UtcNow.Date.AddDays(-30)
     }
 
@@ -79,11 +78,20 @@ try {
 
         $pivotDate = $pivotDate.AddDays(1)
 
+        if ($config.StorageAccountConnStr -and (Test-Path $outputFilePath)) {
+            Write-Host "Writing to Blob Storage"
+            
+            $storageRootPath = "$($config.StorageAccountContainerRootPath)/audit"
+
+            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath "$rootOutputPath\Activity"             
+        }
+
         # Save state 
 
         New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
         
         ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
+        
     }
 
 }

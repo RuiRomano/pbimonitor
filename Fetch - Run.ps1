@@ -1,42 +1,54 @@
+param(    
+    [bool]$activity = $false
+    ,
+    [bool]$catalog = $false
+    ,
+    [bool]$graph = $false
+    ,
+    [bool]$datasetRefresh = $true
+)
+
+
 $ErrorActionPreference = "Stop"
 
 $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
 
+Import-Module "$currentPath\Fetch - Utils.psm1" -Force
+
 Write-Host "Current Path: $currentPath"
 
-Set-Location $currentPath
+$configFilePath = "$currentPath\Config-RRMSFT.json"
 
-$configFilePath = "$currentPath\Config-Test.json"
-
-if (Test-Path $configFilePath)
-{
+if (Test-Path $configFilePath) {
     $config = Get-Content $configFilePath | ConvertFrom-Json
 
     # Default Values
 
-    if (!$config.OutputPath)
-    {        
+    if (!$config.OutputPath) {        
         $config | Add-Member -NotePropertyName "OutputPath" -NotePropertyValue ".\\Data" -Force
     }
 
-    if (!$config.ServicePrincipal.Environment)
-    {
+    if (!$config.ServicePrincipal.Environment) {
         $config.ServicePrincipal | Add-Member -NotePropertyName "Environment" -NotePropertyValue "Public" -Force           
     }
 }
-else
-{
+else {
     throw "Cannot find config file '$configFilePath'"
 }
 
 try {
-    & ".\Fetch - Activity.ps1" -config $config
-    
-    & ".\Fetch - Catalog.ps1" -config $config
-
-    & ".\Fetch - Graph.ps1" -config $config
-
-    & ".\Fetch - DataSetRefresh.ps1" -config $config
+    if ($activity) {
+        & ".\Fetch - Activity.ps1" -config $config
+    }
+    if ($catalog) {
+        & ".\Fetch - Catalog.ps1" -config $config
+    }
+    if ($graph) {
+        & ".\Fetch - Graph.ps1" -config $config
+    }
+    if ($datasetRefresh) {
+        & ".\Fetch - DataSetRefresh.ps1" -config $config
+    }
 }
 catch {
 

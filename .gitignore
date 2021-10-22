@@ -25,3 +25,5 @@ ServicePrincipal.json
 Test -*.ps1
 
 local.settings*
+
+*.docx

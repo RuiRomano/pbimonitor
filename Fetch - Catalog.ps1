@@ -165,6 +165,16 @@ try
 
     #endregion
 
+    # Save to Blob
+
+    if ($config.StorageAccountConnStr) {
+        Write-Host "Writing to Blob Storage"
+        
+        $storageRootPath = "$($config.StorageAccountContainerRootPath)/catalog"
+
+        Add-FolderToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -folderPath $outputPath   
+    }
+
     # Save State
 
     New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null

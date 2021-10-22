@@ -2,6 +2,8 @@
 
 param($Timer)
 
+$global:erroractionpreference = 1
+
 try
 {
     # Get the current universal time in the default string format.
@@ -14,18 +16,18 @@ try
     Write-Host "PBIMonitor - Fetch Activity Started: $currentUTCtime"
         
     $appDataPath = $env:PBIMONITOR_AppDataPath
-    $outputPath = $env:APPSETTING_PBIMONITOR_DataPath
+    $outputPath = $env:PBIMONITOR_DataPath
     if (!$outputPath)
     {
         $outputPath = "$($env:temp)\PBIMonitorData\$([guid]::NewGuid().ToString("n"))"
     }
-    $scriptsPath = $env:PBIMONITOR_ScriptsPath    
-    $storageAccountConnStr = $env:AzureWebJobsStorage
-    $storageContainerName = "pbimonitor"
-    $storageRootPath = "raw/audit"
-    $dataFolderPath = "$outputPath\Activity"
+    $scriptsPath = $env:PBIMONITOR_ScriptsPath                
+
     $config = @{
         "OutputPath" = $outputPath;
+        "StorageAccountConnStr" = $env:AzureWebJobsStorage;
+        "StorageAccountContainerName" = "pbimonitor";
+        "StorageAccountContainerRootPath" = "raw"
         "ServicePrincipal" = @{
             "AppId" = $env:PBIMONITOR_ServicePrincipalId;
             "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;
@@ -44,10 +46,6 @@ try
     $stateFilePath = "$appDataPath\state.json"
     
     & "$scriptsPath\Fetch - Activity.ps1" -config $config -stateFilePath $stateFilePath
-    
-    Write-Host "Writing to Blob Storage"   
-    
-    Add-FolderToBlobStorage -storageAccountConnStr $storageAccountConnStr -storageContainerName $storageContainerName -storageRootPath $storageRootPath -folderPath $dataFolderPath
     
     Write-Host "End"    
 }

@@ -134,7 +134,17 @@ try
     if ($dsRefreshHistoryGlobal.Count -gt 0)
     {        
         $outputFilePath = "$outputPath\workspaces.datasets.refreshes.json"
+
         ConvertTo-Json @($dsRefreshHistoryGlobal) -Compress -Depth 5 | Out-File $outputFilePath -force
+
+        if ($config.StorageAccountConnStr -and (Test-Path $outputFilePath)) {
+
+            Write-Host "Writing to Blob Storage"
+
+            $storageRootPath = "$($config.StorageAccountContainerRootPath)/datasetrefresh"
+
+            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath "$($config.OutputPath)\DataRefresh"   
+        }
     }
 }
 finally
