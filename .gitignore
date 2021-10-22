@@ -23,3 +23,5 @@ ServicePrincipal.json
 /Publish
 
 Test -*.ps1
+
+local.settings*
