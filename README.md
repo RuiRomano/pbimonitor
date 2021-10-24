@@ -1,27 +1,45 @@
-# Session Slides
+
+# Session 
 PBI Monitoring 101 Session Slides: [here](https://github.com/RuiRomano/sessionslides/blob/main/PBIMonitoring101.pdf)
 
-# Setup
+PBI Monitoring 101 Session Recording: [here](https://youtu.be/viMLGEbTtog)
 
-1. Run "Setup - PreRequisites.ps1" (as admin)
-2. Create a Service Principal (see slide 14 of [Presentation Slides](https://github.com/RuiRomano/sessionslides/blob/main/PBIMonitoring101.pdf#presentation))
-3. Write the Service Principal AppId, AppSecret & Tenant ID on the configuration file: .\Config.json
-4. Run the powershell scripts
-5. Open the Power BI Template files and configure the parameter to target the '\data' folder
 
-# Architecture
+# Setup - Local PowerShell
 
 ![image](https://user-images.githubusercontent.com/10808715/121097907-b0f53000-c7ec-11eb-806c-36a6b461a0d5.png)
 
-# Reports
+### Install Required PowerShell Modules (as Administrator)
+```
+Install-Module -Name MicrosoftPowerBIMgmt -RequiredVersion 1.2.1026
+```
+### Create a Service Principal on Azure Active Directory
 
-![image](https://user-images.githubusercontent.com/10808715/130269811-a1083587-2eea-4615-90d5-8ade916fc471.png)
+1. Go to "App Registrations" on Azure Active Directory and select "New App" and leave the default options
+2. Generate a new "Client Secret" on "Certificates & secrets" and save the Secret text
+3. Save the App Id & Tenant Id on the overview page of the service principal
+4. Create a new Security Group on Azure Active Directory and add the Service Principal above as member
+5.  Optionally add the following API's on "API Permissions" and Administrator grant to get the license & user info data:
+    - User.Read.All
+    - Organization.Read.All
+6. As a Power BI Administrator go to the Power BI Tenant Settings and add the Security Group to the setting "Allow service principals to use read-only Power BI admin APIs". You should also enable the settings: "Enhance admin APIs responses with detailed metadata" and "Enhance admin APIs responses with DAX and mashup expressions"
 
-![image](https://user-images.githubusercontent.com/10808715/130269862-77293a90-bacf-4ac4-88a9-0d54efc07977.png)
+### Change the Config.json
 
-![image](https://user-images.githubusercontent.com/10808715/130269931-1125f711-4074-4fd1-b607-29da153010a4.png)
+Open the [Config File](./Config.json) and write the AppId, AppSecret & Tenant Id from the Service Principal
 
-# Azure Function Deploy
+### Run 
+
+Open the file [Fetch - Run](./Fetch%20-%20Run.ps1) and ensure the parameter "configFilePath" is targeting the configuration file.
+
+Run the Powershell Script
+
+### Open the Power BI Report
+
+Open the [Power BI Template file](./PBI%20-%20Activity%20Monitor.pbit) and change the parameter "DataLocation" to the data folder.
+
+
+# Setup - As an Azure Function
 
 On an Azure Subscription create a resource group:
 
@@ -105,4 +123,12 @@ Change the parameter "DataLocation" and write the blob storage name:
 
 ![image](https://user-images.githubusercontent.com/10808715/138612953-18b78a55-84a7-4361-aaa4-9ae979ffca4c.png)
 
-Refresh the Dataset!
+
+# Reports
+
+![image](https://user-images.githubusercontent.com/10808715/130269811-a1083587-2eea-4615-90d5-8ade916fc471.png)
+
+![image](https://user-images.githubusercontent.com/10808715/130269862-77293a90-bacf-4ac4-88a9-0d54efc07977.png)
+
+![image](https://user-images.githubusercontent.com/10808715/130269931-1125f711-4074-4fd1-b607-29da153010a4.png)
+
