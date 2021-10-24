@@ -15,7 +15,7 @@ try
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
 
-    $outputPath = "$($config.OutputPath)\Catalog"    
+    $outputPath = "$($config.OutputPath)\catalog"    
     
     if (!$stateFilePath)
     {
@@ -28,7 +28,7 @@ try
     else {
         $state = New-Object psobject 
     }
-
+    
     # ensure folders
     
     $scansOutputPath = Join-Path $outputPath ("scans\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
@@ -98,69 +98,69 @@ try
     
     $workspacesModified = Invoke-PowerBIRestMethod -Url $modifiedRequestUrl -Method Get | ConvertFrom-Json
 
-    if (!$workspacesModified)
+    if (!$workspacesModified -or $workspacesModified.Count -eq 0)
     {
         Write-Host "No workspaces modified"
     }
+    else {
+        Write-Host "Modified workspaces: $($workspacesModified.Count)"    
 
-    Write-Host "Modified workspaces: $($workspacesModified.Count)"    
+        # Max 1500 workspaces because of throthling of getinfo api (max 16 parallel requests) - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_postworkspaceinfo
 
-    $skip = 0
-    $batchCount = 100
-    $workspacesScanRequests = @()
+        Get-ArrayInBatches -array $workspacesModified -label "GetInfo Global Batch" -batchCount 1500 -script {
+            param($workspacesModifiedOuterBatch)
+            
+            $script:workspacesScanRequests = @()
 
-    # Call GetInfo to request workspace scan in batches of 100 (throtling after 500 calls per hour) https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_postworkspaceinfo
-    do
-    {   
-        $workspacesBatch = @($workspacesModified | Select -First $batchCount -Skip $skip)
+            # Call GetInfo in batches of 100
+            Get-ArrayInBatches -array $workspacesModifiedOuterBatch -label "GetInfo Local Batch" -batchCount 100 -script {
+                param($workspacesBatch)
 
-        if ($workspacesBatch)
-        {
-            Write-Host "Requesting workspace scan: $($skip + $batchCount) / $($workspacesModified.Count)"
+                $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
     
-            $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
+                $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
+    
+                # $script: scope to reference the outerscope variable
 
-            $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
+                $getInfoResult = @(Invoke-PowerBIRestMethod -Url "admin/workspaces/getInfo?$getInfoDetails" -Body $bodyStr -method Post | ConvertFrom-Json)
 
-            $workspacesScanRequests += (Invoke-PowerBIRestMethod -Url "admin/workspaces/getInfo?$getInfoDetails" -Body $bodyStr -method Post | ConvertFrom-Json)
+                $script:workspacesScanRequests += $getInfoResult
+            }
 
-            $skip += $batchCount            
-        }       
-    }
-    while($workspacesBatch.Count -ne 0 -and $workspacesBatch.Count -ge $batchCount)
-
-    # Wait for Scan to execute - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanstatus
-
-    while(@($workspacesScanRequests |? status -in @("Running", "NotStarted")))
-    {
-        Write-Host "Waiting for scan results..."
-
-        Start-Sleep -Seconds 5
-
-        foreach ($workspaceScanRequest in $workspacesScanRequests)
-        {            
-            $scanStatus = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanStatus/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
-
-            Write-Host "Scan '$($scanStatus.id)' : '$($scanStatus.status)'"
-
-            $workspaceScanRequest.status = $scanStatus.status
+            # Wait for Scan to execute - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanstatus
+        
+            while(@($workspacesScanRequests |? status -in @("Running", "NotStarted")))
+            {
+                Write-Host "Waiting for scan results..."
+        
+                Start-Sleep -Seconds 5
+        
+                foreach ($workspaceScanRequest in $workspacesScanRequests)
+                {            
+                    $scanStatus = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanStatus/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
+        
+                    Write-Host "Scan '$($scanStatus.id)' : '$($scanStatus.status)'"
+        
+                    $workspaceScanRequest.status = $scanStatus.status
+                }
+            }
+        
+            # Get Scan results (500 requests per hour) - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanresult    
+        
+            foreach ($workspaceScanRequest in $workspacesScanRequests)
+            {   
+                $scanResult = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanResult/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
+        
+                Write-Host "Scan Result'$($scanStatus.id)' : '$($scanResult.workspaces.Count)'"
+        
+                $outputFilePath = "$scansOutputPath\$($workspaceScanRequest.id).json"
+        
+                $scanResult | Add-Member –MemberType NoteProperty –Name "scanCreatedDateTime"  –Value $workspaceScanRequest.createdDateTime -Force
+        
+                ConvertTo-Json $scanResult -Depth 10 -Compress | Out-File $outputFilePath -force
+        
+            }
         }
-    }
-
-    # Get Scan results (500 requests per hour) - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanresult    
-
-    foreach ($workspaceScanRequest in $workspacesScanRequests)
-    {   
-        $scanResult = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanResult/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
-
-        Write-Host "Scan Result'$($scanStatus.id)' : '$($scanResult.workspaces.Count)'"
-
-        $outputFilePath = "$scansOutputPath\$($workspaceScanRequest.id).json"
-
-        $scanResult | Add-Member –MemberType NoteProperty –Name "scanCreatedDateTime"  –Value $workspaceScanRequest.createdDateTime -Force
-
-        ConvertTo-Json $scanResult -Depth 10 -Compress | Out-File $outputFilePath -force
-
     }
 
     #endregion
@@ -172,7 +172,9 @@ try
         
         $storageRootPath = "$($config.StorageAccountContainerRootPath)/catalog"
 
-        Add-FolderToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -folderPath $outputPath   
+        @($scansOutputPath, $snapshotOutputPath) |% {
+            Add-FolderToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -folderPath $_ -rootFolderPath $outputPath   
+        }
     }
 
     # Save State

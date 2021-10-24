@@ -1,11 +1,13 @@
-param(    
-    [bool]$activity = $false
+param(
+    [string]$configFilePath = ".\Config-RRMSFT.json"
     ,
-    [bool]$catalog = $false
+    [bool]$activity = $true
     ,
-    [bool]$graph = $false
+    [bool]$catalog = $true
     ,
-    [bool]$datasetRefresh = $true
+    [bool]$graph = $true
+    ,
+    [bool]$datasetRefresh = $false
 )
 
 
@@ -17,7 +19,7 @@ Import-Module "$currentPath\Fetch - Utils.psm1" -Force
 
 Write-Host "Current Path: $currentPath"
 
-$configFilePath = "$currentPath\Config-RRMSFT.json"
+Write-Host "Config Path: $configFilePath"
 
 if (Test-Path $configFilePath) {
     $config = Get-Content $configFilePath | ConvertFrom-Json
@@ -34,6 +36,12 @@ if (Test-Path $configFilePath) {
 }
 else {
     throw "Cannot find config file '$configFilePath'"
+}
+
+# Ensure Folders for PBI Report
+
+@("$($config.OutputPath)\Activity", "$($config.OutputPath)\Catalog", "$($config.OutputPath)\Graph") |% {
+    New-Item -ItemType Directory -Path $_ -ErrorAction SilentlyContinue | Out-Null
 }
 
 try {

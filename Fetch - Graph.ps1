@@ -129,7 +129,9 @@ try {
 
     Add-Type -AssemblyName System.Web
 
-    $outputPath = ("$($config.OutputPath)\Graph\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
+    $rootOutputPath = "$($config.OutputPath)\graph"
+    
+    $outputPath = ("$rootOutputPath\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
 
     # ensure folder
 
@@ -159,7 +161,7 @@ try {
 
     $skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits" | select * -ExcludeProperty "@odata.id"    
 
-    $filePath = "$outputPath\subscribedSkus.json"
+    $filePath = "$outputPath\subscribedskus.json"
     
     ConvertTo-Json @($skus) -Compress -Depth 5 | Out-File $filePath -Force
 
@@ -170,7 +172,7 @@ try {
     
         $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
 
-        Add-FolderToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -folderPath "$($config.OutputPath)\Graph" 
+        Add-FolderToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -folderPath $outputPath -rootFolderPath $rootOutputPath 
     }
 
     <#

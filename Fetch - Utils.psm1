@@ -14,6 +14,8 @@ function Add-FolderToBlobStorage {
         $storageRootPath,
         [string]
         $folderPath,
+        [string]
+        $rootFolderPath,
         [bool]
         $ensureContainer = $true
     )
@@ -33,12 +35,17 @@ function Add-FolderToBlobStorage {
 
     $files = @(Get-ChildItem -Path $folderPath -Filter *.* -Recurse -File)
     
-    Write-Host "Adding $($files.Count) files to blobstorage '$storageAccountName/$storageContainerName/$storageRootPath'"
+    Write-Host "Adding folder '$folderPath' (files: $($files.Count)) to blobstorage '$storageAccountName/$storageContainerName/$storageRootPath'"
+
+    if (!$rootFolderPath)
+    {
+        $rootFolderPath = $folderPath
+    }
 
     foreach ($file in $files) {    
         $filePath = $file.FullName
 
-        Add-FileToBlobStorageInternal -ctx $ctx -filePath $filePath -storageRootPath $storageRootPath -rootFolderPath  $folderPath   
+        Add-FileToBlobStorageInternal -ctx $ctx -filePath $filePath -storageRootPath $storageRootPath -rootFolderPath  $rootFolderPath  
     }
 }
 
@@ -98,8 +105,11 @@ function Add-FileToBlobStorageInternal {
         
         $filePath = Resolve-Path $filePath        
 
+        $filePath = $filePath.ToLower()
+
         if ($rootFolderPath) {
             $rootFolderPath = Resolve-Path $rootFolderPath
+            $rootFolderPath = $rootFolderPath.ToLower()
 
             $fileName = (Split-Path $filePath -Leaf)        
             $parentFolder = (Split-Path $filePath -Parent)
@@ -118,4 +128,37 @@ function Add-FileToBlobStorageInternal {
     else {
         Write-Host "File '$filePath' dont exist"
     }
+}
+
+function Get-ArrayInBatches
+{
+    [cmdletbinding()]
+    param
+    (        
+        [array]$array
+        ,
+        [int]$batchCount
+        ,
+        [ScriptBlock]$script
+        ,
+        [string]$label = "Get-ArrayInBatches"
+    )
+
+    $skip = 0
+
+    do
+    {   
+        $batchItems = @($array | Select -First $batchCount -Skip $skip)
+
+        if ($batchItems)
+        {
+            Write-Host "[$label] Batch: $($skip + $batchCount) / $($array.Count)"
+            
+            Invoke-Command -ScriptBlock $script -ArgumentList @(,$batchItems)
+
+            $skip += $batchCount
+        }       
+        
+    }
+    while($batchItems.Count -ne 0 -and $batchItems.Count -ge $batchCount)   
 }

@@ -13,13 +13,13 @@ try {
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
 
-    $rootOutputPath = $config.OutputPath
+    $rootOutputPath = "$($config.OutputPath)\activity"
     New-Item -ItemType Directory -Path $rootOutputPath -ErrorAction SilentlyContinue | Out-Null
 
-    $outputPath = "$rootOutputPath\Activity\{0:yyyy}\{0:MM}"    
+    $outputPath = "$rootOutputPath\{0:yyyy}\{0:MM}"    
     
     if (!$stateFilePath) {
-        $stateFilePath = "$rootOutputPath\state.json"
+        $stateFilePath = "$($config.OutputPath)\state.json"
     }
 
     if (Test-Path $stateFilePath) {
@@ -81,9 +81,9 @@ try {
         if ($config.StorageAccountConnStr -and (Test-Path $outputFilePath)) {
             Write-Host "Writing to Blob Storage"
             
-            $storageRootPath = "$($config.StorageAccountContainerRootPath)/audit"
+            $storageRootPath = "$($config.StorageAccountContainerRootPath)/activity"
 
-            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath "$rootOutputPath\Activity"             
+            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath         
         }
 
         # Save state 

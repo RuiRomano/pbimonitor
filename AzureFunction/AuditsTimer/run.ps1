@@ -26,8 +26,8 @@ try
     $config = @{
         "OutputPath" = $outputPath;
         "StorageAccountConnStr" = $env:AzureWebJobsStorage;
-        "StorageAccountContainerName" = "pbimonitor";
-        "StorageAccountContainerRootPath" = "raw"
+        "StorageAccountContainerName" = $env:PBIMONITOR_StorageContainerName;
+        "StorageAccountContainerRootPath" = $env:PBIMONITOR_StorageRootPath
         "ServicePrincipal" = @{
             "AppId" = $env:PBIMONITOR_ServicePrincipalId;
             "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;

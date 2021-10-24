@@ -19,7 +19,9 @@ try
 
     # ensure folder
 
-    $outputPath = ("$($config.OutputPath)\DataRefresh\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today) 
+    $rootOutputPath = "$($config.OutputPath)\datasetrefresh"
+
+    $outputPath = ("$rootOutputPath\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today) 
     
     $tempPath = Join-Path $outputPath "_temp"
 
@@ -143,7 +145,7 @@ try
 
             $storageRootPath = "$($config.StorageAccountContainerRootPath)/datasetrefresh"
 
-            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath "$($config.OutputPath)\DataRefresh"   
+            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath   
         }
     }
 }
