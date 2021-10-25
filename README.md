@@ -41,6 +41,8 @@ Open the [Power BI Template file](./PBI%20-%20Activity%20Monitor.pbit) and chang
 
 # Setup - As an Azure Function
 
+![image](https://user-images.githubusercontent.com/10808715/138757904-8be24316-d971-4b16-a31b-18b840e88d48.png)
+
 On an Azure Subscription create a resource group:
 
 ![image](https://user-images.githubusercontent.com/10808715/138612805-a01c576d-1a59-4eed-b041-3bc5e0ff19d0.png)
