@@ -1,9 +1,9 @@
-﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt"; ModuleVersion="1.2.1026" }
+﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Profile"; ModuleVersion="1.2.1026" }
+#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Workspaces"; ModuleVersion="1.2.1026" }
 
-param(          
-    $outputPath = (".\Data\DataRefresh\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today),
-    $configFilePath = ".\Config.json", 
-    $credentialPrompt = $false,     
+## README - This script will run with the configured ServicePrincipal, although there are no Admin API's for Schedule Refresh. To Ensure the ServicePrincipal is a member of all Workspaces run the tool "Tool - EnsureServicePrincipal.ps1"
+param(    
+    [psobject]$config,          
     $workspaceFilter = @()
 )
 
@@ -12,62 +12,36 @@ $VerbosePreference = "SilentlyContinue"
 
 try
 {
+    Write-Host "Starting Power BI Dataset Refresh History Fetch"
+
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
 
-
-    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
-
-    Set-Location $currentPath
-
     # ensure folder
 
+    $rootOutputPath = "$($config.OutputPath)\datasetrefresh"
+
+    $outputPath = ("$rootOutputPath\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today) 
+    
     $tempPath = Join-Path $outputPath "_temp"
 
     New-Item -ItemType Directory -Path $tempPath -ErrorAction SilentlyContinue | Out-Null
     New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
+
+    Write-Host "Getting OAuth Token"
+
+    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+
+    $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+
+    Write-Host "Login with: $($pbiAccount.UserName)"
     
-    if (Test-Path $configFilePath)
-    {
-        $config = Get-Content $configFilePath | ConvertFrom-Json
-    }
-    else
-    {
-        throw "Cannot find config file '$configFilePath'"
-    }
-
-    if (!$credentialPrompt)
-    {
-        if (Test-Path $configFilePath)
-        {
-            $config = Get-Content $configFilePath | ConvertFrom-Json
-        }
-        else
-        {
-            throw "Cannot find config file '$configFilePath'"
-        }
-
-        $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
-
-        Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential
-    }
-    else
-    {
-        Connect-PowerBIServiceAccount
-    }
-
     # Find Token Object Id, by decoding OAUTH TOken - https://blog.kloud.com.au/2019/07/31/jwtdetails-powershell-module-for-decoding-jwt-access-tokens-with-readable-token-expiry-time/
     $token = (Get-PowerBIAccessToken -AsString).Split(" ")[1]
     $tokenPayload = $token.Split(".")[1].Replace('-', '+').Replace('_', '/')
     while ($tokenPayload.Length % 4) { $tokenPayload += "=" }
     $tokenPayload = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($tokenPayload)) | ConvertFrom-Json
     $pbiUserIdentifier = $tokenPayload.oid
-
-    # If its a credential prompt the user identifier is the UPN and not the ObjectId
-    if ($credentialPrompt)
-    {
-        $pbiUserIdentifier = $tokenPayload.upn
-    }
 
     #region Workspace Users
 
@@ -160,8 +134,19 @@ try
     }
     
     if ($dsRefreshHistoryGlobal.Count -gt 0)
-    {
-        $dsRefreshHistoryGlobal | ConvertTo-Json | Out-File "$outputPath\workspaces.datasets.refreshes.json" -Force 
+    {        
+        $outputFilePath = "$outputPath\workspaces.datasets.refreshes.json"
+
+        ConvertTo-Json @($dsRefreshHistoryGlobal) -Compress -Depth 5 | Out-File $outputFilePath -force
+
+        if ($config.StorageAccountConnStr -and (Test-Path $outputFilePath)) {
+
+            Write-Host "Writing to Blob Storage"
+
+            $storageRootPath = "$($config.StorageAccountContainerRootPath)/datasetrefresh"
+
+            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath   
+        }
     }
 }
 finally

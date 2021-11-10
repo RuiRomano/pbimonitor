@@ -1,13 +1,11 @@
 param(        
-    $outputPath = (".\Data\Graph\{0:yyyy}/{0:MM}/{0:dd}" -f [datetime]::Today),
-    $configFilePath = ".\Config.json"
+    [psobject]$config    
 )
 
 #region Graph API Helper Functions
 
-function Get-AuthToken
-{
-   [cmdletbinding()]
+function Get-AuthToken {
+    [cmdletbinding()]
     param
     (
         [string]
@@ -20,7 +18,7 @@ function Get-AuthToken
         $appsecret ,
         [string]
         $resource         
-	)
+    )
 
     write-verbose "getting authentication token"
     
@@ -40,9 +38,8 @@ function Get-AuthToken
 
 }
 
-function Read-FromGraphAPI
-{
-   [CmdletBinding()]
+function Read-FromGraphAPI {
+    [CmdletBinding()]
     param
     (
         [string]
@@ -51,29 +48,25 @@ function Read-FromGraphAPI
         $accessToken,
         [string]
         $format = "JSON"     
-	)
+    )
 
     #https://blogs.msdn.microsoft.com/exchangedev/2017/04/07/throttling-coming-to-outlook-api-and-microsoft-graph/
 
-    try
-    {
+    try {
         $headers = @{
-		    'Content-Type'= "application/json"
-		    'Authorization'= "Bearer $accessToken"
-		    }    
+            'Content-Type'  = "application/json"
+            'Authorization' = "Bearer $accessToken"
+        }    
 
         $result = Invoke-RestMethod -Method Get -Uri $url -Headers $headers
 
-        if ($format -eq "CSV")
-        {
+        if ($format -eq "CSV") {
             ConvertFrom-CSV -InputObject $result | Write-Output
         }
-        else 
-        {
+        else {
             Write-Output $result.value            
 
-            while($result.'@odata.nextLink')
-            {            
+            while ($result.'@odata.nextLink') {            
                 $result = Invoke-RestMethod -Method Get -Uri $result.'@odata.nextLink' -Headers $headers
 
                 Write-Output $result.value
@@ -81,26 +74,21 @@ function Read-FromGraphAPI
         }
 
     }
-    catch [System.Net.WebException]
-    {
+    catch [System.Net.WebException] {
         $ex = $_.Exception
 
-        try
-        {                
+        try {                
             $statusCode = $ex.Response.StatusCode
 
-            if ($statusCode -eq 429)
-            {              
+            if ($statusCode -eq 429) {              
                 $message = "429 Throthling Error - Sleeping..."
 
                 Write-Host $message
 
                 Start-Sleep -Seconds 1000
             }              
-			else
-            {
-                if ($ex.Response -ne $null)
-			    {
+            else {
+                if ($ex.Response -ne $null) {
                     $statusCode = $ex.Response.StatusCode
 
                     $stream = $ex.Response.GetResponseStream()
@@ -115,16 +103,15 @@ function Read-FromGraphAPI
                 
                     $message = "$($ex.Message) - '$errorContent'"
                       				
-			    }
-			    else {
-				    $message = "$($ex.Message) - 'Empty'"
-			    }               
+                }
+                else {
+                    $message = "$($ex.Message) - 'Empty'"
+                }               
             }    
 
             Write-Error -Exception $ex -Message $message        
-		}
-        finally
-        {
+        }
+        finally {
             if ($reader) { $reader.Dispose() }
             
             if ($stream) { $stream.Dispose() }
@@ -134,31 +121,21 @@ function Read-FromGraphAPI
 
 #endregion
 
-try
-{
-    Write-Host "Starting Power BI Activity Monitor Graph Fetch"
+try {
+    Write-Host "Starting Graph API Fetch"
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
 
     Add-Type -AssemblyName System.Web
 
-    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
-
-    Set-Location $currentPath
+    $rootOutputPath = "$($config.OutputPath)\graph"
+    
+    $outputPath = ("$rootOutputPath\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
 
     # ensure folder
 
     New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
-
-    if (Test-Path $configFilePath)
-    {
-        $config = Get-Content $configFilePath | ConvertFrom-Json
-    }
-    else
-    {
-        throw "Cannot find config file '$configFilePath'"
-    }
 
     # Get the authentication token
 
@@ -176,7 +153,7 @@ try
 
     $filePath = "$outputPath\users.json"
 
-    $users | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force 
+    ConvertTo-Json @($users) -Compress -Depth 5 | Out-File $filePath -Force 
 
     # Get Skus & license count
 
@@ -184,11 +161,21 @@ try
 
     $skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits" | select * -ExcludeProperty "@odata.id"    
 
-    $filePath = "$outputPath\subscribedSkus.json"
+    $filePath = "$outputPath\subscribedskus.json"
+    
+    ConvertTo-Json @($skus) -Compress -Depth 5 | Out-File $filePath -Force
 
-    $skus | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
+    # Save to Blob
 
-<#
+    if ($config.StorageAccountConnStr) {
+        Write-Host "Writing to Blob Storage"
+    
+        $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
+
+        Add-FolderToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -folderPath $outputPath -rootFolderPath $rootOutputPath 
+    }
+
+    <#
     Write-Host "Get AD Groups"
 
     $groups = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/groups?`$expand=members&`$select=id,description,displayName,createdDateTime,deletedDateTime,groupTypes"
@@ -215,26 +202,11 @@ try
     
     $filePath = "$outputPath\groupsmembers.json"
 
-    $groupsMembers | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
-
+    ConvertTo-Json @($groupsMembers) -Compress -Depth 5 | Out-File $filePath -Force
 #>
 
 }
-catch
-{
-    $ex = $_.Exception
-
-    if ($ex.ToString().Contains("429 (Too Many Requests)"))
-    {
-        Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
-    }  
-
-    Write-Host $ex.ToString() -ForegroundColor Red
-
-    throw
-}
-finally
-{
+finally {
     $stopwatch.Stop()
 
     Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
