@@ -108,8 +108,8 @@ try
 
                 if ($dsRefreshHistory)
                 {              
-                    $dsRefreshHistory = $dsRefreshHistory | Select *, @{Name="dataSetId"; Expression={ $dataset.id }}, @{Name="dataSet"; Expression={ $dataset.name }}`
-                        , @{Name="group"; Expression={ $workspace.name }}, @{Name="configuredBy"; Expression={ $dataset.configuredBy }} `                        
+                    $dsRefreshHistory = @($dsRefreshHistory | Select *, @{Name="dataSetId"; Expression={ $dataset.id }}, @{Name="dataSet"; Expression={ $dataset.name }}`
+                        , @{Name="group"; Expression={ $workspace.name }}, @{Name="configuredBy"; Expression={ $dataset.configuredBy }})
 
                     $dsRefreshHistoryGlobal += $dsRefreshHistory
                 }

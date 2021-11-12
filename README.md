@@ -37,7 +37,7 @@ Open the [Config File](./Config.json) and write the AppId, AppSecret & Tenant Id
 
 The file [Fetch - Run](./Fetch%20-%20Run.ps1) is the entry point to call the other scripts.
 
-Ensure [Fetch - Run](./Fetch%20-%20Run.ps1) is targeting the proper configuration file (parameter "configFilePath") and you can also control which parts are executed by changing the parameters: activity, catalog, graph and datasetrefresh
+Ensure [Fetch - Run](./Fetch%20-%20Run.ps1) is targeting the proper configuration file (parameter "configFilePath") and you can also control which scripts are executed on the parameter $scriptsToRun
 
 Run [Fetch - Run](./Fetch%20-%20Run.ps1)
 

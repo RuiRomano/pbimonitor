@@ -1,15 +1,13 @@
 param(
     [string]$configFilePath = ".\Config-RRMSFT.json"
     ,
-    [bool]$activity = $true
-    ,
-    [bool]$catalog = $true
-    ,
-    [bool]$graph = $true
-    ,
-    [bool]$datasetRefresh = $false
+    [array]$scriptsToRun = @(
+        ".\Fetch - Activity.ps1"
+        , ".\Fetch - Catalog.ps1"
+        , ".\Fetch - Graph.ps1"
+        # , ".\Fetch - DataSetRefresh.ps1"
+    )
 )
-
 
 $ErrorActionPreference = "Stop"
 
@@ -20,7 +18,6 @@ Import-Module "$currentPath\Fetch - Utils.psm1" -Force
 Write-Host "Current Path: $currentPath"
 
 Write-Host "Config Path: $configFilePath"
-
 if (Test-Path $configFilePath) {
     $config = Get-Content $configFilePath | ConvertFrom-Json
 
@@ -45,17 +42,17 @@ else {
 }
 
 try {
-    if ($activity) {
-        & ".\Fetch - Activity.ps1" -config $config
-    }
-    if ($catalog) {
-        & ".\Fetch - Catalog.ps1" -config $config
-    }
-    if ($graph) {
-        & ".\Fetch - Graph.ps1" -config $config
-    }
-    if ($datasetRefresh) {
-        & ".\Fetch - DataSetRefresh.ps1" -config $config
+
+    foreach ($scriptToRun in $scriptsToRun)
+    {        
+        try {
+            Write-Host "Running '$scriptToRun'"
+
+            & $scriptToRun -config $config
+        }
+        catch {            
+            Write-Error "Error on '$scriptToRun' - $($_.Exception.ToString())" -ErrorAction Continue            
+        }   
     }
 }
 catch {

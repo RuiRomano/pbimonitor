@@ -20,6 +20,8 @@ try
 
     Set-Location $currentPath
     
+    # Discover the Service Principal on Config Azure AD Object Id
+
     if (!$servicePrincipalObjectId)
     {
         if (Test-Path $configFilePath)
@@ -70,6 +72,7 @@ try
     # Filter workspaces where the serviceprincipal is not there
 
     $workspaces = $workspaces |? {
+        
         $members = @($_.users |? { $_.identifier -eq $servicePrincipalObjectId })
        
         if ($members.Count -eq 0)
