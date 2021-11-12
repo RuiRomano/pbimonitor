@@ -105,7 +105,7 @@ try
     else {
         Write-Host "Modified workspaces: $($workspacesModified.Count)"    
 
-        # Max 1500 workspaces because of throthling of getinfo api (max 16 parallel requests) - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_postworkspaceinfo
+        # postworkspaceinfo only allows 16 parallel requests, Get-ArrayInBatches allows to create a two level batch strategy. It should support initial load without throttling on tenants with ~50000 workspaces
 
         Get-ArrayInBatches -array $workspacesModified -label "GetInfo Global Batch" -batchCount 1500 -script {
             param($workspacesModifiedOuterBatch)
