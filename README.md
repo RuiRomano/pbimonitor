@@ -30,9 +30,11 @@ Open the [Config File](./Config.json) and write the AppId, AppSecret & Tenant Id
 
 ### Run 
 
-Open the file [Fetch - Run](./Fetch%20-%20Run.ps1) and ensure the parameter "configFilePath" is targeting the configuration file.
+The file [Fetch - Run](./Fetch%20-%20Run.ps1) is the entry point to call the other scripts.
 
-Run the Powershell Script
+Ensure [Fetch - Run](./Fetch%20-%20Run.ps1) is targeting the proper configuration file (parameter "configFilePath") and you can also control which parts are executed by changing the parameters: activity, catalog, graph and datasetrefresh
+
+Run [Fetch - Run](./Fetch%20-%20Run.ps1)
 
 ### Open the Power BI Report
 
