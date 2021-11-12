@@ -6,7 +6,7 @@ For more information please watch the session [PBI Monitoring 101](https://youtu
 This project aims to provide a solution to collect activity & catalog data from your Power BI tenant using powershell scripts and a Power BI templates to analyse all this data.
 
 You can deploy the data collector powershell scripts in two ways:
-- [Locally on a Windows Server](#setup---local-powershell)
+- [Local on Windows](#setup---local-powershell)
 - [As an Azure Function](#setup---as-an-azure-function)
 
 
