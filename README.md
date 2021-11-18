@@ -5,35 +5,62 @@ For more information please watch the session [PBI Monitoring 101](https://youtu
 
 This project aims to provide a solution to collect activity & catalog data from your Power BI tenant using powershell scripts and a Power BI templates to analyse all this data.
 
-You can deploy the data collector powershell scripts in two ways:
+You can deploy the powershell scripts in two ways:
 - [Local on Windows](#setup---local-powershell)
 - [As an Azure Function](#setup---as-an-azure-function)
 
+# Requirements
+
+## Ensure you have the propper permissions
+
+- A [Power BI Administrator](https://docs.microsoft.com/en-us/power-bi/admin/service-admin-role) account to change the [Tenant Settings](https://docs.microsoft.com/en-us/power-bi/guidance/admin-tenant-settings)
+- Permissions to create an [Azure Active Directory Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) 
+- Permissions to create/use an [Azure Active Directory Security Group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal)
+
+## Create a Service Principal & Security Group
+
+On Azure Active Directory:
+
+1. Go to "App Registrations" select "New App" and leave the default options
+2. Generate a new "Client Secret" on "Certificates & secrets" and save the Secret text
+3. Save the App Id & Tenant Id on the overview page of the service principal
+4. Create a new Security Group on Azure Active Directory and add the Service Principal above as member
+5. Optionally add the following API's on "API Permissions" and Administrator grant to get the license & user info data:
+    - User.Read.All
+    - Organization.Read.All
+
+![image](https://user-images.githubusercontent.com/10808715/142396742-2d0b6de9-95ef-4b2a-8ca9-23c9f1527fa9.png)
+
+## Authorize the Service Principal on PowerBI Tenant
+
+As a Power BI Administrator go to the Power BI Tenant Settings and authorize the Security Group on the following tenant settings:
+
+- "Allow service principals to use read-only Power BI admin APIs"
+- "Allow service principals to use Power BI APIs"
+- "Enhance admin APIs responses with detailed metadata"
+- "Enhance admin APIs responses with DAX and mashup expressions"
+
+![image](https://user-images.githubusercontent.com/10808715/142396547-d7ca63e4-929c-4d8f-81c1-70c8bb6452af.png)
 
 # Setup - Local PowerShell
 
 ![image](https://user-images.githubusercontent.com/10808715/121097907-b0f53000-c7ec-11eb-806c-36a6b461a0d5.png)
 
-### Install Required PowerShell Modules (as Administrator)
+## Install Required PowerShell Modules (as Administrator)
 ```
 Install-Module -Name MicrosoftPowerBIMgmt -RequiredVersion 1.2.1026
 ```
-### Create a Service Principal on Azure Active Directory
 
-1. Go to "App Registrations" on Azure Active Directory and select "New App" and leave the default options
-2. Generate a new "Client Secret" on "Certificates & secrets" and save the Secret text
-3. Save the App Id & Tenant Id on the overview page of the service principal
-4. Create a new Security Group on Azure Active Directory and add the Service Principal above as member
-5.  Optionally add the following API's on "API Permissions" and Administrator grant to get the license & user info data:
-    - User.Read.All
-    - Organization.Read.All
-6. As a Power BI Administrator go to the Power BI Tenant Settings and add the Security Group to the setting "Allow service principals to use read-only Power BI admin APIs". You should also enable the settings: "Enhance admin APIs responses with detailed metadata" and "Enhance admin APIs responses with DAX and mashup expressions"
+## Change the Config.json
 
-### Change the Config.json
+Open the [Config File](./Config.json) and write the saved properties from the Service Principal:
+- AppId
+- AppSecret
+- Tenant Id 
 
-Open the [Config File](./Config.json) and write the AppId, AppSecret & Tenant Id from the Service Principal
+![image](https://user-images.githubusercontent.com/10808715/142396344-67cdd1d3-1a4f-4838-baff-4422c4e86b56.png)
 
-### Run 
+## Run 
 
 The file [Fetch - Run](./Fetch%20-%20Run.ps1) is the entry point to call the other scripts.
 
@@ -41,7 +68,7 @@ Ensure [Fetch - Run](./Fetch%20-%20Run.ps1) is targeting the proper configuratio
 
 Run [Fetch - Run](./Fetch%20-%20Run.ps1)
 
-### Open the Power BI Report
+## Open the Power BI Report
 
 Open the [Power BI Template file](./PBI%20-%20Activity%20Monitor.pbit) and change the parameter "DataLocation" to the data folder.
 
