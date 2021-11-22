@@ -94,7 +94,7 @@ try
     Write-Host "Reset: $reset"
     Write-Host "Since: $($state.Catalog.LastRun)"
 
-    # Get Modified Workspaces since last scan
+    # Get Modified Workspaces since last scan (Max 30 per hour)
     
     $workspacesModified = Invoke-PowerBIRestMethod -Url $modifiedRequestUrl -Method Get | ConvertFrom-Json
 
@@ -105,35 +105,45 @@ try
     else {
         Write-Host "Modified workspaces: $($workspacesModified.Count)"    
 
+        $throttleErrorSleepSeconds = 3700
+        $scanStatusSleepSeconds = 5
+        $getInfoOuterBatchCount = 1500
+        $getInfoInnerBatchCount = 100        
+
+        Write-Host "Throttle Handling Variables: getInfoOuterBatchCount: $getInfoOuterBatchCount;  getInfoInnerBatchCount: $getInfoInnerBatchCount; throttleErrorSleepSeconds: $throttleErrorSleepSeconds"
         # postworkspaceinfo only allows 16 parallel requests, Get-ArrayInBatches allows to create a two level batch strategy. It should support initial load without throttling on tenants with ~50000 workspaces
 
-        Get-ArrayInBatches -array $workspacesModified -label "GetInfo Global Batch" -batchCount 1500 -script {
+        Get-ArrayInBatches -array $workspacesModified -label "GetInfo Global Batch" -batchCount $getInfoOuterBatchCount -script {
             param($workspacesModifiedOuterBatch)
-            
+                                            
             $script:workspacesScanRequests = @()
 
-            # Call GetInfo in batches of 100
-            Get-ArrayInBatches -array $workspacesModifiedOuterBatch -label "GetInfo Local Batch" -batchCount 100 -script {
+            # Call GetInfo in batches of 100 (MAX 500 requests per hour)
+            Get-ArrayInBatches -array $workspacesModifiedOuterBatch -label "GetInfo Local Batch" -batchCount $getInfoInnerBatchCount -script {
                 param($workspacesBatch)
+                
+                Wait-On429Error -tentatives 1 -sleepSeconds $throttleErrorSleepSeconds -script {
+                    
+                    $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
+        
+                    $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
+        
+                    # $script: scope to reference the outerscope variable
 
-                $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
-    
-                $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
-    
-                # $script: scope to reference the outerscope variable
+                    $getInfoResult = @(Invoke-PowerBIRestMethod -Url "admin/workspaces/getInfo?$getInfoDetails" -Body $bodyStr -method Post | ConvertFrom-Json)
 
-                $getInfoResult = @(Invoke-PowerBIRestMethod -Url "admin/workspaces/getInfo?$getInfoDetails" -Body $bodyStr -method Post | ConvertFrom-Json)
+                    $script:workspacesScanRequests += $getInfoResult
 
-                $script:workspacesScanRequests += $getInfoResult
-            }
+                }
+            }                
 
-            # Wait for Scan to execute - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanstatus
+            # Wait for Scan to execute - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanstatus (10,000 requests per hour)
         
             while(@($workspacesScanRequests |? status -in @("Running", "NotStarted")))
             {
-                Write-Host "Waiting for scan results..."
+                Write-Host "Waiting for scan results, sleeping for $scanStatusSleepSeconds seconds..."
         
-                Start-Sleep -Seconds 5
+                Start-Sleep -Seconds $scanStatusSleepSeconds
         
                 foreach ($workspaceScanRequest in $workspacesScanRequests)
                 {            
@@ -149,18 +159,23 @@ try
         
             foreach ($workspaceScanRequest in $workspacesScanRequests)
             {   
-                $scanResult = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanResult/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
-        
-                Write-Host "Scan Result'$($scanStatus.id)' : '$($scanResult.workspaces.Count)'"
-        
-                $outputFilePath = "$scansOutputPath\$($workspaceScanRequest.id).json"
-        
-                $scanResult | Add-Member –MemberType NoteProperty –Name "scanCreatedDateTime"  –Value $workspaceScanRequest.createdDateTime -Force
-        
-                ConvertTo-Json $scanResult -Depth 10 -Compress | Out-File $outputFilePath -force
+                Wait-On429Error -tentatives 1 -sleepSeconds $throttleErrorSleepSeconds -script {
+
+                    $scanResult = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanResult/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
+            
+                    Write-Host "Scan Result'$($scanStatus.id)' : '$($scanResult.workspaces.Count)'"
+            
+                    $outputFilePath = "$scansOutputPath\$($workspaceScanRequest.id).json"
+            
+                    $scanResult | Add-Member –MemberType NoteProperty –Name "scanCreatedDateTime"  –Value $workspaceScanRequest.createdDateTime -Force
+            
+                    ConvertTo-Json $scanResult -Depth 10 -Compress | Out-File $outputFilePath -force
+
+                }
         
             }
-        }
+        }                        
+        
     }
 
     #endregion

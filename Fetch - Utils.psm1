@@ -162,3 +162,46 @@ function Get-ArrayInBatches
     }
     while($batchItems.Count -ne 0 -and $batchItems.Count -ge $batchCount)   
 }
+
+function Wait-On429Error
+{
+    [cmdletbinding()]
+    param
+    (        
+        [ScriptBlock]$script
+        ,
+        [int]$sleepSeconds = 3601
+        ,
+        [int]$tentatives = 1
+    )
+ 
+    try {
+        
+        Invoke-Command -ScriptBlock $script
+
+    }
+    catch {
+
+        $ex = $_.Exception
+
+        if ($ex.ToString().Contains("429 (Too Many Requests)")) {
+            Write-Host "'429 (Too Many Requests)' Error - Sleeping for $sleepSeconds seconds before trying again" -ForegroundColor Yellow
+
+            $tentatives = $tentatives - 1
+
+            if ($tentatives -lt 0)
+            {            
+               throw "[Handle-429Error] Max Tentatives reached!"    
+            }
+            else
+            {
+                Start-Sleep -Seconds $sleepSeconds
+                
+                Handle-429Error -script $script -sleepSeconds $sleepSeconds -tentatives $tentatives            
+            }
+        }
+        else {
+            throw  
+        }         
+    }
+}
