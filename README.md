@@ -159,6 +159,14 @@ Change the parameter "DataLocation" and write the blob storage name:
 
 ![image](https://user-images.githubusercontent.com/10808715/138612953-18b78a55-84a7-4361-aaa4-9ae979ffca4c.png)
 
+You'll also need to copy the Access key from the Azure Portal:
+
+![image](https://user-images.githubusercontent.com/37491308/143308677-31606ef2-2d2f-4725-8c44-337743a3eb6e.png)
+
+And then paste it in the "Account key" box in the Azure Blob Storage credentials, which can be found in the Data Source Settings in Power BI Desktop:
+
+![image](https://user-images.githubusercontent.com/37491308/143309293-7f164b7d-ecf1-49ec-9ad0-602472cc0a40.png)
+
 
 # Power BI Report Template
 
