@@ -115,7 +115,7 @@ To deploy the Azure Function code you need to run the script [Tool - PublishAzur
 ![image](https://user-images.githubusercontent.com/10808715/138612849-23c8bdc7-1686-4d2b-a783-5d77e14ef591.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612851-dd146242-28cd-4535-a828-c1acf0118f50.png)
 
-Open the Azure Function page and go to "Advanced Tools" -> "KUDO":
+Open the Azure Function page, go to "Advanced Tools" and click "Go ➔" This will take you to a page called "Kudu Services"
 
 ![image](https://user-images.githubusercontent.com/10808715/138612856-e38ad2c9-a315-424e-b66b-0bb4b73dde63.png)
 
