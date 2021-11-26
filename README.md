@@ -160,7 +160,11 @@ Change the parameter "DataLocation" and write the blob storage name:
 ![image](https://user-images.githubusercontent.com/10808715/138612953-18b78a55-84a7-4361-aaa4-9ae979ffca4c.png)
 
 
-# Reports
+# Power BI Report Template
+
+Open the Power BI Report template [Fetch - Run](./PBI%20-%20Activity%20Monitor.pbit) and set the parameters:
+
+<img width="557" alt="image" src="https://user-images.githubusercontent.com/10808715/143068544-487217a1-0e4a-4c92-bf86-073006c6cb57.png">
 
 ![image](https://user-images.githubusercontent.com/10808715/130269811-a1083587-2eea-4615-90d5-8ade916fc471.png)
 
