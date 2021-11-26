@@ -115,7 +115,7 @@ To deploy the Azure Function code you need to run the script [Tool - PublishAzur
 ![image](https://user-images.githubusercontent.com/10808715/138612849-23c8bdc7-1686-4d2b-a783-5d77e14ef591.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612851-dd146242-28cd-4535-a828-c1acf0118f50.png)
 
-Open the Azure Function page and go to "Advanced Tools" -> "KUDO":
+Open the Azure Function page, go to "Advanced Tools" and click "Go ➔" This will take you to a page called "Kudu Services"
 
 ![image](https://user-images.githubusercontent.com/10808715/138612856-e38ad2c9-a315-424e-b66b-0bb4b73dde63.png)
 
@@ -159,10 +159,18 @@ Change the parameter "DataLocation" and write the blob storage name:
 
 ![image](https://user-images.githubusercontent.com/10808715/138612953-18b78a55-84a7-4361-aaa4-9ae979ffca4c.png)
 
+You'll also need to copy the Access key from the Azure Portal:
+
+![image](https://user-images.githubusercontent.com/37491308/143308677-31606ef2-2d2f-4725-8c44-337743a3eb6e.png)
+
+And then paste it in the "Account key" box in the Azure Blob Storage credentials, which can be found in the Data Source Settings in Power BI Desktop:
+
+![image](https://user-images.githubusercontent.com/37491308/143309293-7f164b7d-ecf1-49ec-9ad0-602472cc0a40.png)
+
 
 # Power BI Report Template
 
-Open the Power BI Report template [Fetch - Run](./PBI%20-%20Activity%20Monitor.pbit) and set the parameters:
+Open the Power BI Report template [PBI - Activity Monitor](./PBI%20-%20Activity%20Monitor.pbit) and set the parameters:
 
 <img width="557" alt="image" src="https://user-images.githubusercontent.com/10808715/143068544-487217a1-0e4a-4c92-bf86-073006c6cb57.png">
 
