@@ -78,21 +78,50 @@ try
 
     $modifiedRequestUrl = "admin/workspaces/modified"
 
+    $fullScan = $false
+
     if ($state.Catalog.LastRun -and !$reset)
     {        
         if (!($state.Catalog.LastRun -is [datetime]))
         {
             $state.Catalog.LastRun = [datetime]::Parse($state.Catalog.LastRun).ToUniversalTime()
         }
+    
+        if ($state.Catalog.LastFullScan -and $config.FullScanAfterDays)
+        {
+            if (!($state.Catalog.LastFullScan -is [datetime]))
+            {
+                $state.Catalog.LastFullScan = [datetime]::Parse($state.Catalog.LastFullScan).ToUniversalTime()
+            }
+            
+            $daysSinceLastFullScan = ($state.Catalog.LastRun - $state.Catalog.LastFullScan).TotalDays            
 
-        $modifiedRequestUrl = $modifiedRequestUrl + "?modifiedSince=$($state.Catalog.LastRun.ToString("o"))"
+            if ($daysSinceLastFullScan -ge $config.FullScanAfterDays)
+            {                
+                Write-Host "Triggering FullScan after $daysSinceLastFullScan days"
+                $fullScan = $true
+            }
+            else {
+                Write-Host "Days to next fullscan: $($config.FullScanAfterDays - $daysSinceLastFullScan)"
+            }
+        }
+        
+        if (!$fullScan)
+        {        
+            $modifiedRequestUrl = $modifiedRequestUrl + "?modifiedSince=$($state.Catalog.LastRun.ToString("o"))"
+        }
+        
     }
     else {
+        $fullScan = $true
         $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null} -Force
     }
 
     Write-Host "Reset: $reset"
     Write-Host "Since: $($state.Catalog.LastRun)"
+    Write-Host "FullScan: $fullScan"
+    Write-Host "Last FullScan: $($state.Catalog.LastFullScan)"
+    Write-Host "FullScanAfterDays: $($config.FullScanAfterDays)"
 
     # Get Modified Workspaces since last scan (Max 30 per hour)
     
@@ -165,7 +194,14 @@ try
             
                     Write-Host "Scan Result'$($scanStatus.id)' : '$($scanResult.workspaces.Count)'"
             
-                    $outputFilePath = "$scansOutputPath\$($workspaceScanRequest.id).json"
+                    $fullScanSuffix = ""
+
+                    if ($fullScan)
+                    {              
+                        $fullScanSuffix = ".fullscan"      
+                    }
+                    
+                    $outputFilePath = "$scansOutputPath\$($workspaceScanRequest.id)$fullScanSuffix.json"
             
                     $scanResult | Add-Member –MemberType NoteProperty –Name "scanCreatedDateTime"  –Value $workspaceScanRequest.createdDateTime -Force
             
@@ -197,6 +233,11 @@ try
     New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
 
     $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
+    
+    if ($fullScan)
+    {
+        $state.Catalog.LastFullScan = [datetime]::UtcNow.Date.ToString("o")
+    }
 
     ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
 }

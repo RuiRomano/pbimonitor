@@ -5,8 +5,8 @@
     # For latest supported version, go to 'https://www.powershellgallery.com/packages/Az'.
     # To use the Az module in your function app, please uncomment the line below.
     # 'Az' = '6.*'
-    'MicrosoftPowerBIMgmt.Profile' = '1.2.1026'        
-    'MicrosoftPowerBIMgmt.Admin' = '1.2.1026'        
-    'MicrosoftPowerBIMgmt.Workspaces' = '1.2.1026'
-    'Az.Storage' = '3.12.0'
+    'MicrosoftPowerBIMgmt.Profile' = '1.2.1077'        
+    'MicrosoftPowerBIMgmt.Admin' = '1.2.1077'        
+    'MicrosoftPowerBIMgmt.Workspaces' = '1.2.1077'
+    'Az.Storage' = '4.4.0'
 }

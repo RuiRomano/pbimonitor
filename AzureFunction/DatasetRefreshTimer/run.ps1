@@ -13,16 +13,15 @@ try
         Write-Host "PowerShell timer is running late!"
     }
 
-    Write-Host "PBIMonitor - Fetch Graph Started: $currentUTCtime"
+    Write-Host "PBIMonitor - Dataset Refresh Started: $currentUTCtime"
         
-    $appDataPath = $env:PBIMONITOR_AppDataPath
     $outputPath = $env:PBIMONITOR_DataPath
     if (!$outputPath)
     {
         $outputPath = "$($env:temp)\PBIMonitorData\$([guid]::NewGuid().ToString("n"))"
     }
     $scriptsPath = $env:PBIMONITOR_ScriptsPath
-
+    
     $config = @{
         "OutputPath" = $outputPath;
         "StorageAccountConnStr" = $env:AzureWebJobsStorage;
@@ -35,15 +34,15 @@ try
             "Environment" = $env:PBIMONITOR_ServicePrincipalEnvironment;
         }
     }
-    
+
     Write-Host "Scripts Path: $scriptsPath"          
     Write-Host "Output Path: $outputPath"
 
     Import-Module "$scriptsPath\Fetch - Utils.psm1" -Force
     
-    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
+    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null    
     
-    & "$scriptsPath\Fetch - Graph.ps1" -config $config
+    & "$scriptsPath\Fetch - DataSetRefresh.ps1" -config $config
     
     Write-Host "End"    
 }

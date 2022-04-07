@@ -27,7 +27,8 @@ try
         "OutputPath" = $outputPath;
         "StorageAccountConnStr" = $env:AzureWebJobsStorage;
         "StorageAccountContainerName" = $env:PBIMONITOR_StorageContainerName;
-        "StorageAccountContainerRootPath" = $env:PBIMONITOR_StorageRootPath
+        "StorageAccountContainerRootPath" = $env:PBIMONITOR_StorageRootPath;
+        "FullScanAfterDays" = $env:PBIMONITOR_FullScanAfterDays
         "ServicePrincipal" = @{
             "AppId" = $env:PBIMONITOR_ServicePrincipalId;
             "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;

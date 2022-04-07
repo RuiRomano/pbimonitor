@@ -3,9 +3,9 @@ param(
     ,
     [array]$scriptsToRun = @(
         ".\Fetch - Activity.ps1"
-        , ".\Fetch - Catalog.ps1"
-        , ".\Fetch - Graph.ps1"
-        , ".\Fetch - DataSetRefresh.ps1"
+        ".\Fetch - Catalog.ps1"
+        ".\Fetch - Graph.ps1"
+        #".\Fetch - DataSetRefresh.ps1"
     )
 )
 

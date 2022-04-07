@@ -3,7 +3,7 @@
 param(               
     [psobject]$config
     ,
-    [string]$stateFilePath    
+    [string]$stateFilePath     
 )
 
 try {
@@ -11,6 +11,14 @@ try {
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()   
+
+    if ($config.ActivityFileBatchSize)
+    {
+        $outputBatchCount = $config.ActivityFileBatchSize
+    }
+    else {
+        $outputBatchCount = 5000   
+    }    
 
     $rootOutputPath = "$($config.OutputPath)\activity"
     New-Item -ItemType Directory -Path $rootOutputPath -ErrorAction SilentlyContinue | Out-Null
@@ -40,6 +48,7 @@ try {
     }
 
     Write-Host "Since: $($state.Activity.LastRun)"
+    Write-Host "OutputBatchCount: $outputBatchCount"
 
     Write-Host "Getting OAuth Token"
 
@@ -48,65 +57,82 @@ try {
     $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
 
     Write-Host "Login with: $($pbiAccount.UserName)"
-
+    
     # Gets audit data for each day
 
     while ($pivotDate -le [datetime]::UtcNow) {           
-        Write-Host "Getting audit data for: '$($pivotDate.ToString("yyyyMMdd"))'"
-
-        $outputFilePath = ("$outputPath\{0:yyyyMMdd}.json" -f $pivotDate)
+        Write-Host "Getting audit data for: '$($pivotDate.ToString("yyyyMMdd"))'"        
             
         $activityAPIUrl = "admin/activityevents?startDateTime='$($pivotDate.ToString("s"))'&endDateTime='$($pivotDate.AddHours(24).AddSeconds(-1).ToString("s"))'"
 
-        # Get-PowerBIActivityEvent was having memory issues on large tenants
+        $audits = @()                  
+        $pageIndex = 1
+        $flagNoActivity = $true
 
-        $result = Invoke-PowerBIRestMethod -Url $activityAPIUrl -method Get | ConvertFrom-Json
-
-        $audits = @($result.activityEventEntities)
-                  
-        while($result.continuationToken -ne $null)
+        do
         {          
-            $result = Invoke-PowerBIRestMethod -Url $result.continuationUri -method Get | ConvertFrom-Json
+            if (!$result.continuationUri)
+            {
+                $result = Invoke-PowerBIRestMethod -Url $activityAPIUrl -method Get | ConvertFrom-Json
+            }
+            else {
+                $result = Invoke-PowerBIRestMethod -Url $result.continuationUri -method Get | ConvertFrom-Json
+            }            
                                 
             if ($result.activityEventEntities)
             {
-                $audits += @($result.activityEventEntities)
+                $audits += @($result.activityEventEntities)               
+            }
+
+            if ($audits.Count -ne 0 -and ($audits.Count -ge $outputBatchCount -or $result.continuationToken -eq $null))
+            {
+                # To avoid duplicate data on existing files, first dont append pageindex to overwrite existing full file
+
+                if ($pageIndex -eq 1)
+                {
+                    $outputFilePath = ("$outputPath\{0:yyyyMMdd}.json" -f $pivotDate)                        
+                }
+                else {
+                    $outputFilePath = ("$outputPath\{0:yyyyMMdd}_$pageIndex.json" -f $pivotDate)
+                }                    
+
+                Write-Host "Writing '$($audits.Count)' audits"
+
+                New-Item -Path (Split-Path $outputFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
+    
+                ConvertTo-Json @($audits) -Compress -Depth 5 | Out-File $outputFilePath -force
+
+                if ($config.StorageAccountConnStr -and (Test-Path $outputFilePath)) {
+                    Write-Host "Writing to Blob Storage"
+                    
+                    $storageRootPath = "$($config.StorageAccountContainerRootPath)/activity"
+        
+                    Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath         
+                }
+                
+                $flagNoActivity = $false
+
+                $pageIndex++
+
+                $audits = @()
             }
         }
+        while($result.continuationToken -ne $null)
 
-        if (!($audits -is [array])) {
-             $audits = @($audits)
-        }
-
-        if ($audits.Count -gt 0) {
-            Write-Host "'$($audits.Count)' audits"
-
-            New-Item -Path (Split-Path $outputFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
-
-            ConvertTo-Json @($audits) -Compress -Depth 5 | Out-File $outputFilePath -force
-        }
-        else {
+        if ($flagNoActivity)
+        {
             Write-Warning "No audit logs for date: '$($pivotDate.ToString("yyyyMMdd"))'"
-        }
+        }    
 
         $state.Activity.LastRun = $pivotDate.Date.ToString("o")
 
         $pivotDate = $pivotDate.AddDays(1)
 
-        if ($config.StorageAccountConnStr -and (Test-Path $outputFilePath)) {
-            Write-Host "Writing to Blob Storage"
-            
-            $storageRootPath = "$($config.StorageAccountContainerRootPath)/activity"
-
-            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath         
-        }
-
         # Save state 
 
         New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
         
-        ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
-        
+        ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8        
     }
 
 }

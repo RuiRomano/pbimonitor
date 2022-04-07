@@ -140,6 +140,7 @@ Go back to the Azure Function page and click on "Configuration", the following c
 | PBIMONITOR_ServicePrincipalEnvironment   | Public       |
 | PBIMONITOR_StorageContainerName | pbimonitor        |
 | PBIMONITOR_StorageRootPath   | raw       |
+| PBIMONITOR_FullScanAfterDays   | 30       |
 
 ![image](https://user-images.githubusercontent.com/10808715/138612882-2b3c462b-5d0d-4606-b818-064819fcb7b9.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612888-80438da3-5bb1-4c75-97f7-425cb804a03f.png)

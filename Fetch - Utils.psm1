@@ -191,13 +191,13 @@ function Wait-On429Error
 
             if ($tentatives -lt 0)
             {            
-               throw "[Handle-429Error] Max Tentatives reached!"    
+               throw "[Wait-On429Error] Max Tentatives reached!"    
             }
             else
             {
                 Start-Sleep -Seconds $sleepSeconds
                 
-                Handle-429Error -script $script -sleepSeconds $sleepSeconds -tentatives $tentatives            
+                Wait-On429Error -script $script -sleepSeconds $sleepSeconds -tentatives $tentatives            
             }
         }
         else {
