@@ -68,9 +68,9 @@ Ensure [Fetch - Run](./Fetch%20-%20Run.ps1) is targeting the proper configuratio
 
 Run [Fetch - Run](./Fetch%20-%20Run.ps1)
 
-## Open the Power BI Report
+## Open the Power BI Report Template
 
-Open the [Power BI Template file](./PBI%20-%20Activity%20Monitor.pbit) and change the parameter "DataLocation" to the data folder.
+Open the [Power BI Template file](./PBI%20-%20Activity%20Monitor%20-%20Disk.pbit) and change the parameter "DataLocation" to the data folder.
 
 
 # Setup - As an Azure Function
@@ -152,9 +152,9 @@ The function should be ready to run, go to the function page and open the “Aud
 ![image](https://user-images.githubusercontent.com/10808715/138612903-4e74625a-1fdc-4197-8034-621040b6b484.png)
 
 
-A change to the Power BI file is required to work with the Blob Storage, open the PBIX and the Power Query window, go to the query "FilesProxy" and uncomment the queries "* from BlobStorage":
+## Power BI Report Template
 
-![image](https://user-images.githubusercontent.com/10808715/138612907-f49d5972-2bd2-4c2f-bf56-6273f07d54a8.png)
+Open the Power BI Report template [PBI - Activity Monitor](./PBI%20-%20Activity%20Monitor%20-%20BlobStorage.pbit) and set the parameters:
 
 Change the parameter "DataLocation" and write the blob storage name:
 
@@ -168,10 +168,6 @@ And then paste it in the "Account key" box in the Azure Blob Storage credentials
 
 ![image](https://user-images.githubusercontent.com/37491308/143309293-7f164b7d-ecf1-49ec-9ad0-602472cc0a40.png)
 
-
-# Power BI Report Template
-
-Open the Power BI Report template [PBI - Activity Monitor](./PBI%20-%20Activity%20Monitor.pbit) and set the parameters:
 
 <img width="557" alt="image" src="https://user-images.githubusercontent.com/10808715/143068544-487217a1-0e4a-4c92-bf86-073006c6cb57.png">
 
