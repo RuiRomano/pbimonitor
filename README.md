@@ -130,17 +130,17 @@ Confirm if the deploy was successful:
 
 Go back to the Azure Function page and click on "Configuration", the following configuration settings must shall be created:
 
-| Setting      | Value |
-| ----------- | ----------- |
-| PBIMONITOR_AppDataPath      | C:\home\data\pbimonitor       |
-| PBIMONITOR_ScriptsPath   | C:\home\site\wwwroot\Scripts        |
+| Setting      | Value | Description
+| ----------- | ----------- |  --------- |
+| PBIMONITOR_AppDataPath      | C:\home\data\pbimonitor       | Path to AppData in Azure Function Disk, its where the state file is stored
+| PBIMONITOR_ScriptsPath   | C:\home\site\wwwroot\Scripts        | Path to scripts on Azure Function Disk
 | PBIMONITOR_ServicePrincipalId      | [YOUR SERVICE PRINCIPAL ID]       |
 | PBIMONITOR_ServicePrincipalSecret  | [YOUR SERVICE PRINCIPAL SECRET]        |
 | PBIMONITOR_ServicePrincipalTenantId | [YOUR TENANT ID]      |
-| PBIMONITOR_ServicePrincipalEnvironment   | Public       |
-| PBIMONITOR_StorageContainerName | pbimonitor        |
-| PBIMONITOR_StorageRootPath   | raw       |
-| PBIMONITOR_FullScanAfterDays   | 30       |
+| PBIMONITOR_ServicePrincipalEnvironment   | Public       | Power BI Cloud Environment
+| PBIMONITOR_StorageContainerName | pbimonitor        | Name of the blob storage container
+| PBIMONITOR_StorageRootPath   | raw       | Path on the storage container
+| PBIMONITOR_FullScanAfterDays   | 30       | Number of Days to repeat a full scan
 
 ![image](https://user-images.githubusercontent.com/10808715/138612882-2b3c462b-5d0d-4606-b818-064819fcb7b9.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612888-80438da3-5bb1-4c75-97f7-425cb804a03f.png)
