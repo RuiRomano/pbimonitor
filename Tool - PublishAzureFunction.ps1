@@ -5,7 +5,7 @@ $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)
 
 $azureFunctionDevFolder = "$currentPath\AzureFunction"
 
-$publishFolder = "$currentPath\Publish"
+$publishFolder = "$currentPath"
 
 $publishFolderTemp = "$publishFolder\temp"
 
