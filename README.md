@@ -110,9 +110,8 @@ In the end the resource group shall have the following resources:
 
 ![image](https://user-images.githubusercontent.com/10808715/138612841-79554c93-cdfa-49f4-bc0a-442674548a4b.png)
 
-To deploy the Azure Function code you need to run the script [Tool - PublishAzureFunction](./Tool%20-%20PublishAzureFunction.ps1). This script will create a zip file ready to deploy to the Azure Function:
+To deploy the Azure Function code you need to deploy the [AzureFunction.zip](./AzureFunction.zip) package:
 
-![image](https://user-images.githubusercontent.com/10808715/138612849-23c8bdc7-1686-4d2b-a783-5d77e14ef591.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612851-dd146242-28cd-4535-a828-c1acf0118f50.png)
 
 Open the Azure Function page, go to "Advanced Tools" and click "Go ➔" This will take you to a page called "Kudu Services"
@@ -150,7 +149,6 @@ The function should be ready to run, go to the function page and open the “Aud
 
 ![image](https://user-images.githubusercontent.com/10808715/138612898-51613dfb-50b5-426d-9ee1-b8314f901b74.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612903-4e74625a-1fdc-4197-8034-621040b6b484.png)
-
 
 ## Power BI Report Template
 
