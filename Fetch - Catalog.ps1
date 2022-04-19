@@ -76,6 +76,13 @@ try
 
     Write-Host "Getting workspaces to scan"
 
+    $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
+
+    if ($config.CatalogGetInfoParameters)
+    {
+        $getInfoDetails = $config.CatalogGetInfoParameters
+    }    
+    
     $modifiedRequestUrl = "admin/workspaces/modified"
 
     $fullScan = $false
@@ -87,24 +94,32 @@ try
             $state.Catalog.LastRun = [datetime]::Parse($state.Catalog.LastRun).ToUniversalTime()
         }
     
-        if ($state.Catalog.LastFullScan -and $config.FullScanAfterDays)
+        if ($config.FullScanAfterDays)
         {
-            if (!($state.Catalog.LastFullScan -is [datetime]))
+            if ($state.Catalog.LastFullScan)
             {
-                $state.Catalog.LastFullScan = [datetime]::Parse($state.Catalog.LastFullScan).ToUniversalTime()
-            }
-            
-            $daysSinceLastFullScan = ($state.Catalog.LastRun - $state.Catalog.LastFullScan).TotalDays            
+                if (!($state.Catalog.LastFullScan -is [datetime]))
+                {
+                    $state.Catalog.LastFullScan = [datetime]::Parse($state.Catalog.LastFullScan).ToUniversalTime()
+                }
+                
+                $daysSinceLastFullScan = ($state.Catalog.LastRun - $state.Catalog.LastFullScan).TotalDays            
 
-            if ($daysSinceLastFullScan -ge $config.FullScanAfterDays)
-            {                
-                Write-Host "Triggering FullScan after $daysSinceLastFullScan days"
+                if ($daysSinceLastFullScan -ge $config.FullScanAfterDays)
+                {                
+                    Write-Host "Triggering FullScan after $daysSinceLastFullScan days"
+                    $fullScan = $true
+                }
+                else {
+                    Write-Host "Days to next fullscan: $($config.FullScanAfterDays - $daysSinceLastFullScan)"
+                }
+            }
+            else
+            {
+                Write-Host "Triggering FullScan, because FullScanAfterDays is configured and LastFullScan is empty"
                 $fullScan = $true
             }
-            else {
-                Write-Host "Days to next fullscan: $($config.FullScanAfterDays - $daysSinceLastFullScan)"
-            }
-        }
+        }        
         
         if (!$fullScan)
         {        
@@ -122,7 +137,8 @@ try
     Write-Host "FullScan: $fullScan"
     Write-Host "Last FullScan: $($state.Catalog.LastFullScan)"
     Write-Host "FullScanAfterDays: $($config.FullScanAfterDays)"
-
+    Write-Host "GetInfo parameters '$getInfoDetails'"
+    
     # Get Modified Workspaces since last scan (Max 30 per hour)
     
     $workspacesModified = Invoke-PowerBIRestMethod -Url $modifiedRequestUrl -Method Get | ConvertFrom-Json
@@ -154,8 +170,6 @@ try
                 Wait-On429Error -tentatives 1 -sleepSeconds $throttleErrorSleepSeconds -script {
                     
                     $bodyStr = @{"workspaces" = @($workspacesBatch.Id) } | ConvertTo-Json
-        
-                    $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
         
                     # $script: scope to reference the outerscope variable
 
@@ -207,6 +221,17 @@ try
             
                     ConvertTo-Json $scanResult -Depth 10 -Compress | Out-File $outputFilePath -force
 
+                    # Save to Blob
+
+                    if ($config.StorageAccountConnStr -and (Test-Path $outputFilePath)) {
+
+                        Write-Host "Writing to Blob Storage"
+                        
+                        $storageRootPath = "$($config.StorageAccountContainerRootPath)/catalog"
+            
+                        Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath     
+
+                    }
                 }
         
             }
@@ -216,18 +241,6 @@ try
 
     #endregion
 
-    # Save to Blob
-
-    if ($config.StorageAccountConnStr) {
-        Write-Host "Writing to Blob Storage"
-        
-        $storageRootPath = "$($config.StorageAccountContainerRootPath)/catalog"
-
-        @($scansOutputPath, $snapshotOutputPath) |% {
-            Add-FolderToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -folderPath $_ -rootFolderPath $outputPath   
-        }
-    }
-
     # Save State
 
     New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
@@ -235,8 +248,8 @@ try
     $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
     
     if ($fullScan)
-    {
-        $state.Catalog.LastFullScan = [datetime]::UtcNow.Date.ToString("o")
+    {        
+        $state.Catalog | Add-Member -type NoteProperty -Name "LastFullScan" -Value ([datetime]::UtcNow.Date.ToString("o")) -Force        
     }
 
     ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
