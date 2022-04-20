@@ -51,7 +51,7 @@ As a Power BI Administrator go to the Power BI Tenant Settings and authorize the
 Install-Module -Name MicrosoftPowerBIMgmt -RequiredVersion 1.2.1026
 ```
 
-## Change the Config.json
+## Configuration file
 
 Open the [Config File](./Config.json) and write the saved properties from the Service Principal:
 - AppId
@@ -71,7 +71,6 @@ Run [Fetch - Run](./Fetch%20-%20Run.ps1)
 ## Open the Power BI Report Template
 
 Open the [Power BI Template file](./PBI%20-%20Activity%20Monitor%20-%20Disk.pbit) and change the parameter "DataLocation" to the data folder.
-
 
 # Setup - As an Azure Function
 

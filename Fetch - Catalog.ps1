@@ -76,7 +76,7 @@ try
 
     Write-Host "Getting workspaces to scan"
 
-    $getInfoDetails = "lineage=true&datasourceDetails=true&datasetSchema=true&datasetExpressions=true&getArtifactUsers=true"
+    $getInfoDetails = "lineage=true&datasourceDetails=true&getArtifactUsers=true&datasetSchema=false&datasetExpressions=false"
 
     if ($config.CatalogGetInfoParameters)
     {
@@ -242,6 +242,8 @@ try
     #endregion
 
     # Save State
+
+    Write-Host "Saving state"
 
     New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
 

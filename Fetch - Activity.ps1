@@ -130,6 +130,8 @@ try {
 
         # Save state 
 
+        Write-Host "Saving state"
+        
         New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
         
         ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8        
