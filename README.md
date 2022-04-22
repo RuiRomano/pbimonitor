@@ -126,7 +126,7 @@ Confirm if the deploy was successful:
 
 ![image](https://user-images.githubusercontent.com/10808715/138612872-273a4df9-474e-4186-9f97-6aae68dd07c0.png)
 
-Go back to the Azure Function page and click on "Configuration", the following configuration settings must shall be created:
+Go back to the Azure Function page and click on "Configuration", and verify that the following configuration settings are created:
 
 | Setting      | Value | Description
 | ----------- | ----------- |  --------- |
