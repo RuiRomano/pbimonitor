@@ -143,6 +143,28 @@ Go back to the Azure Function page and click on "Configuration", and verify that
 ![image](https://user-images.githubusercontent.com/10808715/138612882-2b3c462b-5d0d-4606-b818-064819fcb7b9.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612888-80438da3-5bb1-4c75-97f7-425cb804a03f.png)
 
+Alternate configuration with Azure Key Vault enabled:
+
+Create a system assigned managed identity for your Azure function:
+
+![image](https://user-images.githubusercontent.com/15087494/164741821-c3d9537f-4761-4506-a8c9-d0fc1c10ebb4.png)
+
+Store your your secrets:
+
+![image](https://user-images.githubusercontent.com/15087494/164742488-3837e48a-761b-4008-9605-c2c14f117d8c.png)
+
+Add access policy for you system assigned managed identity created in Azure Key Vault
+
+![image](https://user-images.githubusercontent.com/15087494/164743928-44f99b9c-91d9-4068-938b-97b79e1e085a.png)
+
+Grant "Get" under "Secret Permissions":
+
+![image](https://user-images.githubusercontent.com/15087494/164741243-9b205d59-5070-4f53-b210-2515182b4c67.png)
+
+Wait a few minutes for the "Key vault Reference" to sync up and verify:
+
+![image](https://user-images.githubusercontent.com/15087494/164720874-91f230be-ed1e-465d-a8cc-ac36715323d9.png)
+
 
 The function should be ready to run, go to the function page and open the “AuditsTimer” and Run it:
 
