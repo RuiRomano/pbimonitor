@@ -153,7 +153,7 @@ Store your your secrets:
 
 ![image](https://user-images.githubusercontent.com/15087494/164742488-3837e48a-761b-4008-9605-c2c14f117d8c.png)
 
-Add access policy for you system assigned managed identity created in Azure Key Vault
+Add access policy for you system assigned managed identity created in your Azure function:
 
 ![image](https://user-images.githubusercontent.com/15087494/164743928-44f99b9c-91d9-4068-938b-97b79e1e085a.png)
 
