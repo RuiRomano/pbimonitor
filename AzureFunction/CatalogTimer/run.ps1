@@ -6,6 +6,8 @@ $global:erroractionpreference = 1
 
 try
 {
+    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)    
+
     # Get the current universal time in the default string format.
     $currentUTCtime = (Get-Date).ToUniversalTime()
     
@@ -15,39 +17,17 @@ try
 
     Write-Host "PBIMonitor - Fetch Catalog Started: $currentUTCtime"
         
-    $appDataPath = $env:PBIMONITOR_AppDataPath
-    $outputPath = $env:PBIMONITOR_DataPath
-    if (!$outputPath)
-    {
-        $outputPath = "$($env:temp)\PBIMonitorData\$([guid]::NewGuid().ToString("n"))"
-    }
-    $scriptsPath = $env:PBIMONITOR_ScriptsPath
-    
-    $config = @{
-        "OutputPath" = $outputPath;
-        "StorageAccountConnStr" = $env:AzureWebJobsStorage;
-        "StorageAccountContainerName" = $env:PBIMONITOR_StorageContainerName;
-        "StorageAccountContainerRootPath" = $env:PBIMONITOR_StorageRootPath;
-        "FullScanAfterDays" = $env:PBIMONITOR_FullScanAfterDays;
-        "CatalogGetInfoParameters" = $env:PBIMONITOR_CatalogGetInfoParameters
-        "ServicePrincipal" = @{
-            "AppId" = $env:PBIMONITOR_ServicePrincipalId;
-            "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;
-            "TenantId" = $env:PBIMONITOR_ServicePrincipalTenantId;
-            "Environment" = $env:PBIMONITOR_ServicePrincipalEnvironment;
-        }
-    }
+    Import-Module "$currentPath\..\utils.psm1" -Force
 
-    Write-Host "Scripts Path: $scriptsPath"          
-    Write-Host "Output Path: $outputPath"
+    $config = Get-PBIMonitorConfig $currentPath
 
-    Import-Module "$scriptsPath\Fetch - Utils.psm1" -Force
+    Import-Module "$($config.ScriptsPath)\Fetch - Utils.psm1" -Force
     
-    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null    
+    New-Item -ItemType Directory -Path ($config.OutputPath) -ErrorAction SilentlyContinue | Out-Null
     
-    $stateFilePath = "$appDataPath\state.json"
+    $stateFilePath = "$($config.AppDataPath)\state.json"
     
-    & "$scriptsPath\Fetch - Catalog.ps1" -config $config -stateFilePath $stateFilePath
+    & "$($config.ScriptsPath)\Fetch - Catalog.ps1" -config $config -stateFilePath $stateFilePath
     
     Write-Host "End"    
 }

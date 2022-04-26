@@ -6,8 +6,9 @@ For more information please watch the session [PBI Monitoring 101](https://youtu
 This project aims to provide a solution to collect activity & catalog data from your Power BI tenant using powershell scripts and a Power BI templates to analyse all this data.
 
 You can deploy the powershell scripts in two ways:
-- [Local on Windows](#setup---local-powershell)
-- [As an Azure Function](#setup---as-an-azure-function)
+- [As an Azure Function](#setup---as-an-azure-function) - Recommended
+- [As a Local PowerShell in Server](#setup---as-a-local-powershell)
+
 
 # Requirements
 
@@ -41,36 +42,6 @@ As a Power BI Administrator go to the Power BI Tenant Settings and authorize the
 - "Enhance admin APIs responses with DAX and mashup expressions"
 
 ![image](https://user-images.githubusercontent.com/10808715/142396547-d7ca63e4-929c-4d8f-81c1-70c8bb6452af.png)
-
-# Setup - Local PowerShell
-
-![image](https://user-images.githubusercontent.com/10808715/121097907-b0f53000-c7ec-11eb-806c-36a6b461a0d5.png)
-
-## Install Required PowerShell Modules (as Administrator)
-```
-Install-Module -Name MicrosoftPowerBIMgmt -RequiredVersion 1.2.1026
-```
-
-## Configuration file
-
-Open the [Config File](./Config.json) and write the saved properties from the Service Principal:
-- AppId
-- AppSecret
-- Tenant Id 
-
-![image](https://user-images.githubusercontent.com/10808715/142396344-67cdd1d3-1a4f-4838-baff-4422c4e86b56.png)
-
-## Run 
-
-The file [Fetch - Run](./Fetch%20-%20Run.ps1) is the entry point to call the other scripts.
-
-Ensure [Fetch - Run](./Fetch%20-%20Run.ps1) is targeting the proper configuration file (parameter "configFilePath") and you can also control which scripts are executed on the parameter $scriptsToRun
-
-Run [Fetch - Run](./Fetch%20-%20Run.ps1)
-
-## Open the Power BI Report Template
-
-Open the [Power BI Template file](./PBI%20-%20Activity%20Monitor%20-%20Disk.pbit) and change the parameter "DataLocation" to the data folder.
 
 # Setup - As an Azure Function
 
@@ -174,3 +145,32 @@ And then paste it in the "Account key" box in the Azure Blob Storage credentials
 
 ![image](https://user-images.githubusercontent.com/10808715/130269931-1125f711-4074-4fd1-b607-29da153010a4.png)
 
+# Setup - As a Local PowerShell
+
+![image](https://user-images.githubusercontent.com/10808715/121097907-b0f53000-c7ec-11eb-806c-36a6b461a0d5.png)
+
+## Install Required PowerShell Modules (as Administrator)
+```
+Install-Module -Name MicrosoftPowerBIMgmt -RequiredVersion 1.2.1026
+```
+
+## Configuration file
+
+Open the [Config File](./Config.json) and write the saved properties from the Service Principal:
+- AppId
+- AppSecret
+- Tenant Id 
+
+![image](https://user-images.githubusercontent.com/10808715/142396344-67cdd1d3-1a4f-4838-baff-4422c4e86b56.png)
+
+## Run 
+
+The file [Fetch - Run](./Fetch%20-%20Run.ps1) is the entry point to call the other scripts.
+
+Ensure [Fetch - Run](./Fetch%20-%20Run.ps1) is targeting the proper configuration file (parameter "configFilePath") and you can also control which scripts are executed on the parameter $scriptsToRun
+
+Run [Fetch - Run](./Fetch%20-%20Run.ps1)
+
+## Open the Power BI Report Template
+
+Open the [Power BI Template file](./PBI%20-%20Activity%20Monitor%20-%20Disk.pbit) and change the parameter "DataLocation" to the data folder.

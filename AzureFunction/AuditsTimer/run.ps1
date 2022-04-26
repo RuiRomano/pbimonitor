@@ -6,6 +6,9 @@ $global:erroractionpreference = 1
 
 try
 {
+
+    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)    
+
     # Get the current universal time in the default string format.
     $currentUTCtime = (Get-Date).ToUniversalTime()
     
@@ -14,39 +17,18 @@ try
     }
 
     Write-Host "PBIMonitor - Fetch Activity Started: $currentUTCtime"
-        
-    $appDataPath = $env:PBIMONITOR_AppDataPath
-    $outputPath = $env:PBIMONITOR_DataPath
-    if (!$outputPath)
-    {
-        $outputPath = "$($env:temp)\PBIMonitorData\$([guid]::NewGuid().ToString("n"))"
-    }
-    $scriptsPath = $env:PBIMONITOR_ScriptsPath                
+    
+    Import-Module "$currentPath\..\utils.psm1" -Force
 
-    $config = @{
-        "OutputPath" = $outputPath;
-        "StorageAccountConnStr" = $env:AzureWebJobsStorage;
-        "StorageAccountContainerName" = $env:PBIMONITOR_StorageContainerName;
-        "StorageAccountContainerRootPath" = $env:PBIMONITOR_StorageRootPath;
-        "ActivityFileBatchSize" = $env:PBIMONITOR_ActivityFileBatchSize;
-        "ServicePrincipal" = @{
-            "AppId" = $env:PBIMONITOR_ServicePrincipalId;
-            "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;
-            "TenantId" = $env:PBIMONITOR_ServicePrincipalTenantId;
-            "Environment" = $env:PBIMONITOR_ServicePrincipalEnvironment;
-        }
-    }
+    $config = Get-PBIMonitorConfig $currentPath
+
+    New-Item -ItemType Directory -Path ($config.OutputPath) -ErrorAction SilentlyContinue | Out-Null
+
+    Import-Module "$($config.ScriptsPath)\Fetch - Utils.psm1" -Force
+
+    $stateFilePath = "$($config.AppDataPath)\state.json"
     
-    Write-Host "Scripts Path: $scriptsPath"          
-    Write-Host "Output Path: $outputPath"
-        
-    Import-Module "$scriptsPath\Fetch - Utils.psm1" -Force
-    
-    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null       
-    
-    $stateFilePath = "$appDataPath\state.json"
-    
-    & "$scriptsPath\Fetch - Activity.ps1" -config $config -stateFilePath $stateFilePath
+    & "$($config.ScriptsPath)\Fetch - Activity.ps1" -config $config -stateFilePath $stateFilePath
     
     Write-Host "End"    
 }

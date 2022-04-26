@@ -88,7 +88,7 @@ try
                    
         Write-Host "Processing workspace: '$($workspace.Name)' $item/$total" 
 
-        Write-Host "Datasets: $($workspace.datasets.Count)"
+        Write-Host "Datasets: $(@($workspace.datasets).Count)"
 
         $refreshableDatasets = @($workspace.datasets |? { $_.isRefreshable -eq $true -and $_.addRowsAPIEnabled -eq $false})
 

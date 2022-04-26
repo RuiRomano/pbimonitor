@@ -6,6 +6,8 @@ $global:erroractionpreference = 1
 
 try
 {
+    $currentPath = (Split-Path $MyInvocation.MyCommand.Definition -Parent)   
+
     # Get the current universal time in the default string format.
     $currentUTCtime = (Get-Date).ToUniversalTime()
     
@@ -15,35 +17,15 @@ try
 
     Write-Host "PBIMonitor - Fetch Graph Started: $currentUTCtime"
         
-    $appDataPath = $env:PBIMONITOR_AppDataPath
-    $outputPath = $env:PBIMONITOR_DataPath
-    if (!$outputPath)
-    {
-        $outputPath = "$($env:temp)\PBIMonitorData\$([guid]::NewGuid().ToString("n"))"
-    }
-    $scriptsPath = $env:PBIMONITOR_ScriptsPath
+    Import-Module "$currentPath\..\utils.psm1" -Force
 
-    $config = @{
-        "OutputPath" = $outputPath;
-        "StorageAccountConnStr" = $env:AzureWebJobsStorage;
-        "StorageAccountContainerName" = $env:PBIMONITOR_StorageContainerName;
-        "StorageAccountContainerRootPath" = $env:PBIMONITOR_StorageRootPath
-        "ServicePrincipal" = @{
-            "AppId" = $env:PBIMONITOR_ServicePrincipalId;
-            "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;
-            "TenantId" = $env:PBIMONITOR_ServicePrincipalTenantId;
-            "Environment" = $env:PBIMONITOR_ServicePrincipalEnvironment;
-        }
-    }
-    
-    Write-Host "Scripts Path: $scriptsPath"          
-    Write-Host "Output Path: $outputPath"
+    $config = Get-PBIMonitorConfig $currentPath
 
-    Import-Module "$scriptsPath\Fetch - Utils.psm1" -Force
+    Import-Module "$($config.ScriptsPath)\Fetch - Utils.psm1" -Force
     
-    New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
+    New-Item -ItemType Directory -Path ($config.OutputPath) -ErrorAction SilentlyContinue | Out-Null
     
-    & "$scriptsPath\Fetch - Graph.ps1" -config $config
+    & "$($config.ScriptsPath)\Fetch - Graph.ps1" -config $config
     
     Write-Host "End"    
 }
