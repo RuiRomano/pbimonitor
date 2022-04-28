@@ -137,6 +137,8 @@ try {
 
     New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
 
+    $files = @()
+
     # Get the authentication token
 
     Write-Host "Getting OAuth token"
@@ -152,6 +154,7 @@ try {
     $users = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/users?`$select=id,mail,companyName,displayName,assignedLicenses,onPremisesUserPrincipalName,UserPrincipalName,jobTitle,userType" | select * -ExcludeProperty "@odata.id"
 
     $filePath = "$outputPath\users.json"
+    $files += $filePath
 
     ConvertTo-Json @($users) -Compress -Depth 5 | Out-File $filePath -Force 
 
@@ -162,17 +165,30 @@ try {
     $skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits" | select * -ExcludeProperty "@odata.id"    
 
     $filePath = "$outputPath\subscribedskus.json"
-    
+    $files += $filePath
+
     ConvertTo-Json @($skus) -Compress -Depth 5 | Out-File $filePath -Force
 
     # Save to Blob
 
     if ($config.StorageAccountConnStr) {
+
         Write-Host "Writing to Blob Storage"
     
         $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
 
-        Add-FolderToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -folderPath $outputPath -rootFolderPath $rootOutputPath 
+        foreach ($outputFilePath in $files)
+        {            
+            if (Test-Path $outputFilePath)
+            {
+                Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath    
+
+                Remove-Item $outputFilePath -Force
+            }
+            else {
+                Write-Host "Cannot find file '$outputFilePath'"
+            }
+        }
     }
 
     <#

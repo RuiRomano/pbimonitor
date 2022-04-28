@@ -1,4 +1,4 @@
-#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Profile"; ModuleVersion="1.2.1026" }
+#Requires -Modules MicrosoftPowerBIMgmt.Profile
 
 param(               
     [psobject]$config
@@ -108,6 +108,10 @@ try {
                     $storageRootPath = "$($config.StorageAccountContainerRootPath)/activity"
         
                     Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath         
+
+                    Write-Host "Deleting local file '$outputFilePath'"
+
+                    Remove-Item $outputFilePath -Force
                 }
                 
                 $flagNoActivity = $false

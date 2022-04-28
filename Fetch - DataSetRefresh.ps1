@@ -1,5 +1,4 @@
-﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Profile"; ModuleVersion="1.2.1026" }
-#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Workspaces"; ModuleVersion="1.2.1026" }
+﻿#Requires -Modules MicrosoftPowerBIMgmt.Profile, MicrosoftPowerBIMgmt.Workspaces
 
 ## README - This script will run with the configured ServicePrincipal, although there are no Admin API's for Schedule Refresh. To Ensure the ServicePrincipal is a member of all Workspaces run the tool "Tool - EnsureServicePrincipal.ps1"
 param(    
@@ -146,6 +145,8 @@ try
             $storageRootPath = "$($config.StorageAccountContainerRootPath)/datasetrefresh"
 
             Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath   
+
+            Remove-Item $outputFilePath -Force
         }
     }
 }

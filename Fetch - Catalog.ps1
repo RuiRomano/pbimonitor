@@ -1,4 +1,4 @@
-﻿#Requires -Modules @{ ModuleName="MicrosoftPowerBIMgmt.Profile"; ModuleVersion="1.2.1026" }
+﻿#Requires -Modules MicrosoftPowerBIMgmt.Profile
 
 param(               
     [psobject]$config
@@ -47,7 +47,10 @@ try
 
     #region ADMIN API    
 
-    $filePath = "$snapshotOutputPath\apps.json"    
+    $snapshotFiles = @()
+
+    $filePath = "$snapshotOutputPath\apps.json"
+    $snapshotFiles += $filePath    
 
     if (!(Test-Path $filePath))
     {     
@@ -68,6 +71,28 @@ try
     else
     {
         Write-Host "'$filePath' already exists"
+    }    
+
+    # Save to Blob 
+
+    if ($config.StorageAccountConnStr) {
+        
+        Write-Host "Writing Snapshots to Blob Storage"
+
+        $storageRootPath = "$($config.StorageAccountContainerRootPath)/catalog"
+
+        foreach ($outputFilePath in $snapshotFiles)
+        {            
+            if (Test-Path $outputFilePath)
+            {
+                Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath     
+
+                Remove-Item $outputFilePath -Force
+            }
+            else {
+                Write-Warning "Cannot find file '$outputFilePath'"
+            }
+        }
     }
 
     #endregion
@@ -231,6 +256,7 @@ try
             
                         Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath     
 
+                        Remove-Item $outputFilePath -Force
                     }
                 }
         

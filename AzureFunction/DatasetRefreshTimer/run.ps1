@@ -1,4 +1,4 @@
-#Requires -Modules @{ ModuleName="Az.Storage"; ModuleVersion="3.12.0" }
+#Requires -Modules Az.Storage
 
 param($Timer)
 
