@@ -32,3 +32,4 @@ local.settings*
 
 /DatasetStats
 Fetch - Run-Local.ps1
+Setup - DeployAzureFunction.ps1
