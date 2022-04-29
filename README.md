@@ -28,7 +28,7 @@ On Azure Active Directory:
 4. Create a new Security Group on Azure Active Directory and add the Service Principal above as member
 5. Optionally add the following API's on "API Permissions" and Administrator grant to get the license & user info data:
     - User.Read.All
-    - Organization.Read.All
+    - Directory.Read.All
 
 ![image](https://user-images.githubusercontent.com/10808715/142396742-2d0b6de9-95ef-4b2a-8ca9-23c9f1527fa9.png)
 
@@ -97,7 +97,9 @@ Confirm if the deploy was successful:
 
 ![image](https://user-images.githubusercontent.com/10808715/138612872-273a4df9-474e-4186-9f97-6aae68dd07c0.png)
 
-Go back to the Azure Function page and click on "Configuration", and verify that the following configuration settings are created:
+## Azure Function Configuration
+
+Go back to the Azure Function page and click on "Configuration", and manually add the following settings:
 
 | Setting      | Value | Description
 | ----------- | ----------- |  --------- |
@@ -114,7 +116,7 @@ Go back to the Azure Function page and click on "Configuration", and verify that
 ![image](https://user-images.githubusercontent.com/10808715/138612882-2b3c462b-5d0d-4606-b818-064819fcb7b9.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612888-80438da3-5bb1-4c75-97f7-425cb804a03f.png)
 
-Alternate configuration with Azure Key Vault enabled:
+### Enable Azure Azure Key Vault
 
 Create a system assigned managed identity for your Azure function:
 
