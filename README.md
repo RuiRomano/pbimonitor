@@ -144,6 +144,18 @@ The function should be ready to run, go to the function page and open the “Aud
 ![image](https://user-images.githubusercontent.com/10808715/138612898-51613dfb-50b5-426d-9ee1-b8314f901b74.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612903-4e74625a-1fdc-4197-8034-621040b6b484.png)
 
+## Azure Function Time Triggers
+
+The Azure Function has 4 time trigger functions enabled by default:
+
+| Function      | Default Execution | Description
+| ----------- | ----------- |  --------- |
+| AuditsTimer      | Everyday at 2AM       | Fetches activity data from the Actitivy API
+| CatalogTimer   | Everyday at 1AM    | Fetches metadata from the tenant: workspaces, datasets, reports,data sources
+| DatasetRefreshTimer      | Everyday at 5AM  | Fetches the refresh history of all datasets in workspaces where the service principal is a Member
+| GraphTimer  | Everyday at 4AM        | Fetches the User & License information from Graph API
+
+
 ## Power BI Report Template
 
 Open the Power BI Report template [PBI - Activity Monitor](./PBI%20-%20Activity%20Monitor%20-%20BlobStorage.pbit) and set the parameters:
