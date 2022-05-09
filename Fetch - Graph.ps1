@@ -137,48 +137,43 @@ try {
 
     New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
 
-    $files = @()
-
-    # Get the authentication token
-
-    Write-Host "Getting OAuth token"
-
-    $authToken = Get-AuthToken -resource "https://graph.microsoft.com" -appid $config.ServicePrincipal.AppId -appsecret $config.ServicePrincipal.AppSecret -tenantid $config.ServicePrincipal.TenantId
-
     $graphUrl = "https://graph.microsoft.com/beta"
+    $apiResource = "https://graph.microsoft.com"
 
-    # Get Users & Assigned Licenses
+    $graphCalls = @(
+        @{
+            GraphUrl = "$graphUrl/users?`$select=id,displayName,assignedLicenses,UserPrincipalName";
+            FilePath = "$outputPath\users.json"
+        }
+        ,
+        @{
+            GraphUrl = "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits,prepaidUnits,skuid,skupartnumber,prepaidUnits";
+            FilePath = "$outputPath\subscribedskus.json"
+        }
+    )
 
-    Write-Host "Getting Users from Graph"
+    foreach ($graphCall in $graphCalls)
+    {
+        Write-Host "Getting OAuth token"
 
-    $users = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/users?`$select=id,mail,companyName,displayName,assignedLicenses,onPremisesUserPrincipalName,UserPrincipalName,jobTitle,userType" | select * -ExcludeProperty "@odata.id"
+        $authToken = Get-AuthToken -resource $apiResource -appid $config.ServicePrincipal.AppId -appsecret $config.ServicePrincipal.AppSecret -tenantid $config.ServicePrincipal.TenantId
 
-    $filePath = "$outputPath\users.json"
-    $files += $filePath
+        Write-Host "Calling Graph API: '$($graphCall.GraphUrl)'"
 
-    ConvertTo-Json @($users) -Compress -Depth 5 | Out-File $filePath -Force 
+        $data = Read-FromGraphAPI -accessToken $authToken -url $graphCall.GraphUrl | select * -ExcludeProperty "@odata.id"
 
-    # Get Skus & license count
+        Write-Host "Writing to file: '$($graphCall.FilePath)'"
 
-    Write-Host "Getting SKUs from Graph"
+        ConvertTo-Json @($data) -Compress -Depth 5 | Out-File $graphCall.FilePath -Force
 
-    $skus = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits, prepaidUnits,skuid,skupartnumber,prepaidUnits" | select * -ExcludeProperty "@odata.id"    
+        if ($config.StorageAccountConnStr) {
 
-    $filePath = "$outputPath\subscribedskus.json"
-    $files += $filePath
-
-    ConvertTo-Json @($skus) -Compress -Depth 5 | Out-File $filePath -Force
-
-    # Save to Blob
-
-    if ($config.StorageAccountConnStr) {
-
-        Write-Host "Writing to Blob Storage"
+            Write-Host "Writing to Blob Storage"
+        
+            $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
     
-        $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
-
-        foreach ($outputFilePath in $files)
-        {            
+            $outputFilePath = $graphCall.FilePath
+     
             if (Test-Path $outputFilePath)
             {
                 Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath    
@@ -190,36 +185,6 @@ try {
             }
         }
     }
-
-    <#
-    Write-Host "Get AD Groups"
-
-    $groups = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/groups?`$expand=members&`$select=id,description,displayName,createdDateTime,deletedDateTime,groupTypes"
-
-    $groups = $groups | select * -ExcludeProperty "@odata.id"    
-
-    $filePath = "$outputPath\groups.json"
-
-    $groups | ConvertTo-Json -Compress -Depth 5 | Out-File $filePath -Force
-
-    $groupsWithMoreThan20Members = $groups |? { $_.members.Count -eq 20 }
-
-    $groupsMembers = @()
-
-    Write-Host "Get Group Members from $($groupsWithMoreThan20Members.Count) groups"
-
-    foreach($group in $groupsWithMoreThan20Members)
-    {        
-        $groupMembers = Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/groups/$($group.id)/members?`$select=id" | Select id,  @{n='groupId';e={$group.id}}
-
-        $groupsMembers += $groupMembers
-    
-    }
-    
-    $filePath = "$outputPath\groupsmembers.json"
-
-    ConvertTo-Json @($groupsMembers) -Compress -Depth 5 | Out-File $filePath -Force
-#>
 
 }
 finally {
