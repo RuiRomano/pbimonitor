@@ -31,6 +31,8 @@ On Azure Active Directory:
     - Directory.Read.All
 
 ![image](https://user-images.githubusercontent.com/10808715/142396742-2d0b6de9-95ef-4b2a-8ca9-23c9f1527fa9.png)
+<img width="762" alt="image" src="https://user-images.githubusercontent.com/10808715/169350157-a9ccb47d-2c65-4b1a-80a1-757b9b02536d.png">
+
 
 ## Authorize the Service Principal on PowerBI Tenant
 
