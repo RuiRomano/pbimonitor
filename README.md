@@ -118,13 +118,15 @@ Go back to the Azure Function page and click on "Configuration", and manually ad
 ![image](https://user-images.githubusercontent.com/10808715/138612882-2b3c462b-5d0d-4606-b818-064819fcb7b9.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612888-80438da3-5bb1-4c75-97f7-425cb804a03f.png)
 
-### Enable Azure Azure Key Vault
+### Enable Azure Azure Key Vault (Optional)
+
+Its possible to store the Service Principal secret in Azure Key Vault, see the [documentation](https://docs.microsoft.com/en-gb/azure/app-service/app-service-key-vault-references?tabs=azure-cli) for more detail: 
 
 Create a system assigned managed identity for your Azure function:
 
 ![image](https://user-images.githubusercontent.com/15087494/164741821-c3d9537f-4761-4506-a8c9-d0fc1c10ebb4.png)
 
-Store your your secrets:
+Create your secrets in Azure Key Vault:
 
 ![image](https://user-images.githubusercontent.com/15087494/164742488-3837e48a-761b-4008-9605-c2c14f117d8c.png)
 
@@ -136,15 +138,16 @@ Grant "Get" under "Secret Permissions":
 
 ![image](https://user-images.githubusercontent.com/15087494/164741243-9b205d59-5070-4f53-b210-2515182b4c67.png)
 
-Wait a few minutes for the "Key vault Reference" to sync up and verify:
+Reference your KeyVault on the Application Settings of Azure Function:
+
+| Setting      | Value 
+| ----------- | ----------- 
+| PBIMONITOR_ServicePrincipalId      | @Microsoft.KeyVault(VaultName=myvault;SecretName=appid)       
+| PBIMONITOR_ServicePrincipalSecret  | @Microsoft.KeyVault(VaultName=myvault;SecretName=pbilog)      
+| PBIMONITOR_ServicePrincipalTenantId | @Microsoft.KeyVault(VaultName=myvault;SecretName=tenantid)    
 
 ![image](https://user-images.githubusercontent.com/15087494/164720874-91f230be-ed1e-465d-a8cc-ac36715323d9.png)
 
-
-The function should be ready to run, go to the function page and open the “AuditsTimer” and Run it:
-
-![image](https://user-images.githubusercontent.com/10808715/138612898-51613dfb-50b5-426d-9ee1-b8314f901b74.png)
-![image](https://user-images.githubusercontent.com/10808715/138612903-4e74625a-1fdc-4197-8034-621040b6b484.png)
 
 ## Azure Function Time Triggers
 
@@ -156,6 +159,11 @@ The Azure Function has 4 time trigger functions enabled by default:
 | CatalogTimer   | Everyday at 1AM    | Fetches metadata from the tenant: workspaces, datasets, reports,data sources
 | DatasetRefreshTimer      | Everyday at 5AM  | Fetches the refresh history of all datasets in workspaces where the service principal is a Member
 | GraphTimer  | Everyday at 4AM        | Fetches the User & License information from Graph API
+
+The function should be ready to run, go to the function page and open the “AuditsTimer” and Run it:
+
+![image](https://user-images.githubusercontent.com/10808715/138612898-51613dfb-50b5-426d-9ee1-b8314f901b74.png)
+![image](https://user-images.githubusercontent.com/10808715/138612903-4e74625a-1fdc-4197-8034-621040b6b484.png)
 
 ## Force a Full Scan
 
