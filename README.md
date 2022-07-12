@@ -155,6 +155,19 @@ The Azure Function has 4 time trigger functions enabled by default:
 | DatasetRefreshTimer      | Everyday at 5AM  | Fetches the refresh history of all datasets in workspaces where the service principal is a Member
 | GraphTimer  | Everyday at 4AM        | Fetches the User & License information from Graph API
 
+## Force a Full Scan
+
+On large tenants you may run into memory issues reading all the data from a Power BI Dataset.
+
+The PowerQuery of the PowerBI template was optimized to only read the scan files since the last full scan and the Azure Function setting 'PBIMONITOR_FullScanAfterDays' ensure a full scan will be executed every X days.
+
+Its also possible to force a full scan by editing the State file (C:\home\data\pbimonitor\state.json) using [Kudo](https://docs.microsoft.com/en-us/azure/app-service/resources-kudu)
+
+![image](./Images/Kudo_Statefile.png)
+
+And remove properties: Catalog.LastRun, Catalog.LastFullScan (if exists)
+
+![image](./Images/Kudo_Statefile2.png)
 
 ## Power BI Report Template
 
