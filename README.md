@@ -90,7 +90,7 @@ Open the Azure Function page, go to "Advanced Tools" and click "Go ➔" This wil
 
 ![image](https://user-images.githubusercontent.com/10808715/138612856-e38ad2c9-a315-424e-b66b-0bb4b73dde63.png)
 
-Go to "Tools" -> "Zip Push Deploy" and drag & drop the file AzureFunction.zip:
+Go to "Tools" -> "Zip Push Deploy" and drag & drop the file [AzureFunction.zip](./AzureFunction.zip):
 
 ![image](https://user-images.githubusercontent.com/10808715/138612860-6c849c90-8c56-4c0d-b914-22cf8a6ba57a.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612867-a3fbe8f9-bae0-412c-936b-f893da3c8c46.png)
@@ -178,6 +178,10 @@ Its also possible to force a full scan by editing the State file (C:\home\data\p
 And remove properties: Catalog.LastRun, Catalog.LastFullScan (if exists)
 
 ![image](./Images/Kudo_Statefile2.png)
+
+## Storage Account
+
+If you dont want to use the built-in storage account of the Azure Function its possible to connect the Azure Function to another storage account by setting the connection string of the storage account in the configuration property: 'PBIMONITOR_StorageConnStr'
 
 ## Power BI Report Template
 

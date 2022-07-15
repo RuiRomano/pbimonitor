@@ -36,11 +36,18 @@ function Get-PBIMonitorConfig {
         $environment = "Public"
     }
 
+    $stgAccountConnStr = $env:PBIMONITOR_StorageConnStr
+
+    if (!$stgAccountConnStr)
+    {
+        $stgAccountConnStr = $env:AzureWebJobsStorage
+    }   
+
     $config = @{
         "AppDataPath" = $appDataPath;
         "ScriptsPath" = $scriptsPath;
         "OutputPath" = $outputPath;
-        "StorageAccountConnStr" = $env:AzureWebJobsStorage;
+        "StorageAccountConnStr" = $stgAccountConnStr;
         "StorageAccountContainerName" = $env:PBIMONITOR_StorageContainerName;
         "StorageAccountContainerRootPath" = $env:PBIMONITOR_StorageRootPath;
         "ActivityFileBatchSize" = $env:PBIMONITOR_ActivityFileBatchSize;
