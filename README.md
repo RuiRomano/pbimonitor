@@ -30,8 +30,8 @@ On Azure Active Directory:
     - User.Read.All
     - Directory.Read.All
 
-![image](https://user-images.githubusercontent.com/10808715/142396742-2d0b6de9-95ef-4b2a-8ca9-23c9f1527fa9.png)
-<img width="762" alt="image" src="https://user-images.githubusercontent.com/10808715/169350157-a9ccb47d-2c65-4b1a-80a1-757b9b02536d.png">
+        ![image](https://user-images.githubusercontent.com/10808715/142396742-2d0b6de9-95ef-4b2a-8ca9-23c9f1527fa9.png)
+        <img width="762" alt="image" src="https://user-images.githubusercontent.com/10808715/169350157-a9ccb47d-2c65-4b1a-80a1-757b9b02536d.png">
 
 
 ## Authorize the Service Principal on PowerBI Tenant
@@ -44,6 +44,16 @@ As a Power BI Administrator go to the Power BI Tenant Settings and authorize the
 - "Enhance admin APIs responses with DAX and mashup expressions"
 
 ![image](https://user-images.githubusercontent.com/10808715/142396547-d7ca63e4-929c-4d8f-81c1-70c8bb6452af.png)
+
+# API's Used
+
+| Scope      | Resource | API
+| ----------- | -------- |  ---------------- |
+| Activity      | Power BI Activity Logs | [Admin API - Activity Events](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/getactivityevents)
+| Power BI Metadata  | Workspaces,DataSets,Reports,Dashboards,Permissions,Schema & Lineage | [Admin Scan API – GetModifiedWorkspaces](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-modified-workspaces); [Admin Scan API – PostWorkspaceInfo](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-post-workspace-info); [Admin Scan API – GetScanStatus (loop)](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-scan-status); [Admin Scan API – GetScanResult](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-scan-result)
+| RefreshHistory      | Dataset Refresh History      | [Admin API - GetGroupsAsAdmin + Expand DataSets](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/groups_getgroupsasadmin); [Dataset API - Get Refresh History](https://docs.microsoft.com/en-us/rest/api/power-bi/datasets/getrefreshhistoryingroup)
+| Users & Licenses  | Users & Licenses; Licenses Details      | [Graph API – Users](https://docs.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http);[Graph API – SubscribedSKUs](https://docs.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http)
+
 
 # Setup - As an Azure Function
 
