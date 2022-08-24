@@ -214,13 +214,27 @@ And then paste it in the "Account key" box in the Azure Blob Storage credentials
 ![image](https://user-images.githubusercontent.com/37491308/143309293-7f164b7d-ecf1-49ec-9ad0-602472cc0a40.png)
 
 
-<img width="557" alt="image" src="https://user-images.githubusercontent.com/10808715/143068544-487217a1-0e4a-4c92-bf86-073006c6cb57.png">
-
 ![image](https://user-images.githubusercontent.com/10808715/130269811-a1083587-2eea-4615-90d5-8ade916fc471.png)
 
 ![image](https://user-images.githubusercontent.com/10808715/130269862-77293a90-bacf-4ac4-88a9-0d54efc07977.png)
 
 ![image](https://user-images.githubusercontent.com/10808715/130269931-1125f711-4074-4fd1-b607-29da153010a4.png)
+
+## Incremental Refresh
+
+By default the Power BI template will read all the activity files from the storage account, but those files are not updatable and a possible optimization is to enable [Incremental Refresh](https://docs.microsoft.com/en-us/power-bi/connect-data/incremental-refresh-overview) on the Activity Table.
+
+The template is already prepared to support Incremental Refresh and filter only the new files, there is already a RangeStart & RangeEnd parameter:
+
+![image](./Images/PBI_IncrementalRefresParams.png)
+
+![image](./Images/PBI_IncrementalRefresFilter.png)
+
+On the "Activity" table, enable Incremental Refresh with the desired configuration:
+
+![image](./Images/PBI_IncrementalRefresConfig.png)
+
+The Dataset refresh should be significantly faster in the service after this configuration.
 
 # Setup - As a Local PowerShell
 
