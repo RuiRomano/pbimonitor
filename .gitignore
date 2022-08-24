@@ -33,3 +33,4 @@ local.settings*
 /DatasetStats
 Fetch - Run-Local.ps1
 Setup - DeployAzureFunction.ps1
+Tool - PublishDataflow.ps1
