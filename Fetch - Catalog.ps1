@@ -26,6 +26,7 @@ try
         $state = Get-Content $stateFilePath | ConvertFrom-Json
 
         #ensure mandatory fields
+        $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue (new-object PSObject) -ErrorAction SilentlyContinue
         $state.Catalog | Add-Member -NotePropertyName "LastRun" -NotePropertyValue $null -ErrorAction SilentlyContinue
         $state.Catalog | Add-Member -NotePropertyName "LastFullScan" -NotePropertyValue $null -ErrorAction SilentlyContinue
     }
@@ -34,6 +35,8 @@ try
         $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null; "LastFullScan" = $null} -Force
     }
     
+    $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
+
     # ensure folders
     
     $scansOutputPath = Join-Path $outputPath ("scans\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)

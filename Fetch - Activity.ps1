@@ -36,6 +36,8 @@ try {
         $state = New-Object psobject 
     }
     
+    $maxHistoryDate = [datetime]::UtcNow.Date.AddDays(-30)
+
     if ($state.Activity.LastRun) {
         if (!($state.Activity.LastRun -is [datetime])) {
             $state.Activity.LastRun = [datetime]::Parse($state.Activity.LastRun).ToUniversalTime()
@@ -44,10 +46,16 @@ try {
     }
     else {
         $state | Add-Member -NotePropertyName "Activity" -NotePropertyValue @{"LastRun" = $null } -Force
-        $pivotDate = [datetime]::UtcNow.Date.AddDays(-30)
+        $pivotDate = $maxHistoryDate
     }
 
-    Write-Host "Since: $($state.Activity.LastRun)"
+    if ($pivotDate -lt $maxHistoryDate)
+    {
+        Write-Host "Last run was more than 30 days ago"
+        $pivotDate = $maxHistoryDate
+    }
+
+    Write-Host "Since: $($pivotDate.ToString("s"))"
     Write-Host "OutputBatchCount: $outputBatchCount"
 
     Write-Host "Getting OAuth Token"
