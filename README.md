@@ -115,7 +115,7 @@ Go back to the Azure Function page and click on "Configuration", and manually ad
 
 | Setting      | Value | Description
 | ----------- | ----------- |  --------- |
-| PBIMONITOR_StorageConnStr      | Optional, only if you want to store data in a different storage from the Storage Account (setting 'AzureWebJobsStorage')       |
+| PBIMONITOR_StorageConnStr      |      | Optional, only if you want to store data in a different storage from the Storage Account (setting 'AzureWebJobsStorage')  
 | PBIMONITOR_AppDataPath      | C:\home\data\pbimonitor       | Path to AppData in Azure Function Disk, its where the state file is stored
 | PBIMONITOR_ScriptsPath   | C:\home\site\wwwroot\Scripts        | Path to scripts on Azure Function Disk
 | PBIMONITOR_ServicePrincipalId      | [YOUR SERVICE PRINCIPAL ID]       |
