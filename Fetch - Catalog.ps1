@@ -24,11 +24,19 @@ try
 
     if (Test-Path $stateFilePath) {
         $state = Get-Content $stateFilePath | ConvertFrom-Json
+
+        #ensure mandatory fields
+        $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue (new-object PSObject) -ErrorAction SilentlyContinue
+        $state.Catalog | Add-Member -NotePropertyName "LastRun" -NotePropertyValue $null -ErrorAction SilentlyContinue
+        $state.Catalog | Add-Member -NotePropertyName "LastFullScan" -NotePropertyValue $null -ErrorAction SilentlyContinue
     }
     else {
         $state = New-Object psobject 
+        $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null; "LastFullScan" = $null} -Force
     }
     
+    $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
+
     # ensure folders
     
     $scansOutputPath = Join-Path $outputPath ("scans\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
@@ -107,8 +115,13 @@ try
     {
         $getInfoDetails = $config.CatalogGetInfoParameters
     }    
+
+    $getModifiedWorkspacesParams = "excludePersonalWorkspaces=false&excludeInActiveWorkspaces=true"
     
-    $modifiedRequestUrl = "admin/workspaces/modified"
+    if ($config.CatalogGetModifiedParameters)
+    {
+        $getModifiedWorkspacesParams = $config.CatalogGetModifiedParameters
+    }
 
     $fullScan = $false
 
@@ -148,20 +161,33 @@ try
         
         if (!$fullScan)
         {        
-            $modifiedRequestUrl = $modifiedRequestUrl + "?modifiedSince=$($state.Catalog.LastRun.ToString("o"))"
+            $modifiedSinceDate = $state.Catalog.LastRun
+
+            $modifiedSinceDateMinDate = [datetime]::UtcNow.Date.AddDays(-30)
+
+            if ($modifiedSinceDate -le $modifiedSinceDateMinDate)
+            {
+                Write-Host "Last Run date was '$($modifiedSinceDate.ToString("o"))' but cannot go longer than 30 days"
+
+                $modifiedSinceDate = $modifiedSinceDateMinDate
+            }
+
+            $getModifiedWorkspacesParams = $getModifiedWorkspacesParams + "&modifiedSince=$($modifiedSinceDate.ToString("o"))"
         }
         
     }
     else {
         $fullScan = $true
-        $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null} -Force
     }
+
+    $modifiedRequestUrl = "admin/workspaces/modified?$getModifiedWorkspacesParams"
 
     Write-Host "Reset: $reset"
     Write-Host "Since: $($state.Catalog.LastRun)"
     Write-Host "FullScan: $fullScan"
     Write-Host "Last FullScan: $($state.Catalog.LastFullScan)"
     Write-Host "FullScanAfterDays: $($config.FullScanAfterDays)"
+    Write-Host "GetModified parameters '$getModifiedWorkspacesParams'"
     Write-Host "GetInfo parameters '$getInfoDetails'"
     
     # Get Modified Workspaces since last scan (Max 30 per hour)
@@ -277,7 +303,7 @@ try
     
     if ($fullScan)
     {        
-        $state.Catalog | Add-Member -type NoteProperty -Name "LastFullScan" -Value ([datetime]::UtcNow.Date.ToString("o")) -Force        
+        $state.Catalog.LastFullScan  = [datetime]::UtcNow.Date.ToString("o")     
     }
 
     ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8

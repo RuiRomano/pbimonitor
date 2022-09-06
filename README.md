@@ -30,8 +30,8 @@ On Azure Active Directory:
     - User.Read.All
     - Directory.Read.All
 
-![image](https://user-images.githubusercontent.com/10808715/142396742-2d0b6de9-95ef-4b2a-8ca9-23c9f1527fa9.png)
-<img width="762" alt="image" src="https://user-images.githubusercontent.com/10808715/169350157-a9ccb47d-2c65-4b1a-80a1-757b9b02536d.png">
+        ![image](https://user-images.githubusercontent.com/10808715/142396742-2d0b6de9-95ef-4b2a-8ca9-23c9f1527fa9.png)
+        <img width="762" alt="image" src="https://user-images.githubusercontent.com/10808715/169350157-a9ccb47d-2c65-4b1a-80a1-757b9b02536d.png">
 
 
 ## Authorize the Service Principal on PowerBI Tenant
@@ -44,6 +44,16 @@ As a Power BI Administrator go to the Power BI Tenant Settings and authorize the
 - "Enhance admin APIs responses with DAX and mashup expressions"
 
 ![image](https://user-images.githubusercontent.com/10808715/142396547-d7ca63e4-929c-4d8f-81c1-70c8bb6452af.png)
+
+# API's Used
+
+| Scope      | Resource | API
+| ----------- | -------- |  ---------------- |
+| Activity      | Power BI Activity Logs | [Admin API - Activity Events](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/getactivityevents)
+| Power BI Metadata  | Workspaces,DataSets,Reports,Dashboards,Permissions,Schema & Lineage | [Admin Scan API – GetModifiedWorkspaces](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-modified-workspaces); [Admin Scan API – PostWorkspaceInfo](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-post-workspace-info); [Admin Scan API – GetScanStatus (loop)](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-scan-status); [Admin Scan API – GetScanResult](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-scan-result)
+| RefreshHistory      | Dataset Refresh History      | [Admin API - GetGroupsAsAdmin + Expand DataSets](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/groups_getgroupsasadmin); [Dataset API - Get Refresh History](https://docs.microsoft.com/en-us/rest/api/power-bi/datasets/getrefreshhistoryingroup)
+| Users & Licenses  | Users & Licenses; Licenses Details      | [Graph API – Users](https://docs.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http);[Graph API – SubscribedSKUs](https://docs.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http)
+
 
 # Setup - As an Azure Function
 
@@ -105,6 +115,7 @@ Go back to the Azure Function page and click on "Configuration", and manually ad
 
 | Setting      | Value | Description
 | ----------- | ----------- |  --------- |
+| PBIMONITOR_StorageConnStr      |      | Optional, only if you want to store data in a different storage from the Storage Account (setting 'AzureWebJobsStorage')  
 | PBIMONITOR_AppDataPath      | C:\home\data\pbimonitor       | Path to AppData in Azure Function Disk, its where the state file is stored
 | PBIMONITOR_ScriptsPath   | C:\home\site\wwwroot\Scripts        | Path to scripts on Azure Function Disk
 | PBIMONITOR_ServicePrincipalId      | [YOUR SERVICE PRINCIPAL ID]       |
@@ -113,7 +124,10 @@ Go back to the Azure Function page and click on "Configuration", and manually ad
 | PBIMONITOR_ServicePrincipalEnvironment   | Public       | Power BI Cloud Environment
 | PBIMONITOR_StorageContainerName | pbimonitor        | Name of the blob storage container
 | PBIMONITOR_StorageRootPath   | raw       | Path on the storage container
-| PBIMONITOR_FullScanAfterDays   | 30       | Number of Days to repeat a full scan
+| PBIMONITOR_FullScanAfterDays   | 30       | Number of Days to repeat a full scan - Optimization to avoid reading too many scanner files on the Power BI Dataset
+| PBIMONITOR_CatalogGetModifiedParameters   |        | Optional, default: 'excludePersonalWorkspaces=false&excludeInActiveWorkspaces=true'
+| PBIMONITOR_CatalogGetInfoParameters   |        | Optional, default: 'lineage=true&datasourceDetails=true&getArtifactUsers=true&datasetSchema=false&datasetExpressions=false'
+
 
 ![image](https://user-images.githubusercontent.com/10808715/138612882-2b3c462b-5d0d-4606-b818-064819fcb7b9.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612888-80438da3-5bb1-4c75-97f7-425cb804a03f.png)
@@ -200,13 +214,27 @@ And then paste it in the "Account key" box in the Azure Blob Storage credentials
 ![image](https://user-images.githubusercontent.com/37491308/143309293-7f164b7d-ecf1-49ec-9ad0-602472cc0a40.png)
 
 
-<img width="557" alt="image" src="https://user-images.githubusercontent.com/10808715/143068544-487217a1-0e4a-4c92-bf86-073006c6cb57.png">
-
 ![image](https://user-images.githubusercontent.com/10808715/130269811-a1083587-2eea-4615-90d5-8ade916fc471.png)
 
 ![image](https://user-images.githubusercontent.com/10808715/130269862-77293a90-bacf-4ac4-88a9-0d54efc07977.png)
 
 ![image](https://user-images.githubusercontent.com/10808715/130269931-1125f711-4074-4fd1-b607-29da153010a4.png)
+
+## Incremental Refresh
+
+By default the Power BI template will read all the activity files from the storage account, but those files are not updatable and a possible optimization is to enable [Incremental Refresh](https://docs.microsoft.com/en-us/power-bi/connect-data/incremental-refresh-overview) on the Activity Table.
+
+The template is already prepared to support Incremental Refresh and filter only the new files, there is already a RangeStart & RangeEnd parameter:
+
+![image](./Images/PBI_IncrementalRefresParams.png)
+
+![image](./Images/PBI_IncrementalRefresFilter.png)
+
+On the "Activity" table, enable Incremental Refresh with the desired configuration:
+
+![image](./Images/PBI_IncrementalRefresConfig.png)
+
+The Dataset refresh should be significantly faster in the service after this configuration.
 
 # Setup - As a Local PowerShell
 

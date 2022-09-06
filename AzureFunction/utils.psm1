@@ -53,6 +53,7 @@ function Get-PBIMonitorConfig {
         "ActivityFileBatchSize" = $env:PBIMONITOR_ActivityFileBatchSize;
         "FullScanAfterDays" = $env:PBIMONITOR_FullScanAfterDays;
         "CatalogGetInfoParameters" = $env:PBIMONITOR_CatalogGetInfoParameters;
+        "CatalogGetModifiedParameters" = $env:PBIMONITOR_CatalogGetModifiedParameters;
         "ServicePrincipal" = @{
             "AppId" = $env:PBIMONITOR_ServicePrincipalId;
             "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;

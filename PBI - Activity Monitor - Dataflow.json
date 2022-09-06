@@ -1,0 +1,928 @@
+{
+  "name": "PBI - Activity Monitor - Dataflow",
+  "description": "",
+  "version": "1.0",
+  "culture": "en-GB",
+  "modifiedTime": "2022-08-24T19:51:59.997834+01:00",
+  "ppdf:outputFileFormat": "Csv",
+  "pbi:mashup": {
+    "fastCombine": false,
+    "allowNativeQueries": false,
+    "queriesMetadata": {
+      "BlobStorageName": {
+        "queryId": "9620488a-0dcc-40dd-9390-c4cbeb8045bd",
+        "queryName": "BlobStorageName"
+      },
+      "BlobStorageContainerName": {
+        "queryId": "6c88b4e8-a88c-40c2-bd63-83fbe448a8af",
+        "queryName": "BlobStorageContainerName"
+      },
+      "TimezoneOffset": {
+        "queryId": "dcc107c7-a573-4489-a0f0-a8e9267bf524",
+        "queryName": "TimezoneOffset"
+      },
+      "VarRangeStart": {
+        "queryId": "131d04fa-3780-44cf-971e-c6783200d3b0",
+        "queryName": "VarRangeStart"
+      },
+      "VarRangeEnd": {
+        "queryId": "5949c0d0-908a-48f0-b52e-e8e6d008d417",
+        "queryName": "VarRangeEnd"
+      },
+      "Activity-Files from BlobStorage": {
+        "queryId": "06175d4c-841e-475b-afa9-5d2d60cb7a06",
+        "queryName": "Activity-Files from BlobStorage"
+      },
+      "Catalog-Files from BlobStorage": {
+        "queryId": "38d64661-d42f-4f0a-8ba1-3c6df748ea21",
+        "queryName": "Catalog-Files from BlobStorage"
+      },
+      "Graph-Files from BlobStorage": {
+        "queryId": "2d014fc7-f35d-49c1-8ac2-5d3ef16e2b9a",
+        "queryName": "Graph-Files from BlobStorage"
+      },
+      "FilesProxy": {
+        "queryId": "04cd54b4-73ca-49a8-ada8-34f5ce414f56",
+        "queryName": "FilesProxy"
+      },
+      "Catalog-Files": {
+        "queryId": "9fab1527-51d6-41d8-847f-ccb61e7b5d7e",
+        "queryName": "Catalog-Files"
+      },
+      "Catalog-Scans": {
+        "queryId": "bc3e777a-8c2a-4bcd-bd21-77291dfabd14",
+        "queryName": "Catalog-Scans"
+      },
+      "Catalog-Workspaces LastScan": {
+        "queryId": "4110e236-0f4b-4ad3-a199-8eb702f7c4cf",
+        "queryName": "Catalog-Workspaces LastScan",
+        "loadEnabled": true
+      },
+      "Catalog - Workspaces RAW": {
+        "queryId": "35e12493-608e-4401-bad5-251ea6a4346d",
+        "queryName": "Catalog - Workspaces RAW"
+      },
+      "Catalog - Dataset RAW": {
+        "queryId": "285fe09a-c378-4871-ad79-059dffaa6b1f",
+        "queryName": "Catalog - Dataset RAW"
+      },
+      "Catalog - Dataflow RAW": {
+        "queryId": "e59adac8-b1be-41ad-93c5-20b3ebdea961",
+        "queryName": "Catalog - Dataflow RAW"
+      },
+      "Catalog - Datamart RAW": {
+        "queryId": "6c761349-a6be-4800-bef3-0f9307de8753",
+        "queryName": "Catalog - Datamart RAW"
+      },
+      "Catalog - DataSource": {
+        "queryId": "55eff5b3-3fd6-4127-b78f-9397fa77af64",
+        "queryName": "Catalog - DataSource",
+        "loadEnabled": true
+      },
+      "Catalog - DatasetDataSource": {
+        "queryId": "f9921481-4566-4dca-ac34-db3798a6703c",
+        "queryName": "Catalog - DatasetDataSource",
+        "loadEnabled": true
+      },
+      "Catalog - Report": {
+        "queryId": "9305ad20-fa5e-4fb2-b9d0-0127fcf87136",
+        "queryName": "Catalog - Report",
+        "loadEnabled": true
+      },
+      "Catalog - Dashboard": {
+        "queryId": "c41f32bc-9418-405e-8a16-6cc7b1b319c8",
+        "queryName": "Catalog - Dashboard",
+        "loadEnabled": true
+      },
+      "Catalog - Dataset": {
+        "queryId": "5da0021d-0c42-4d78-bc26-7764da3fd159",
+        "queryName": "Catalog - Dataset",
+        "loadEnabled": true
+      },
+      "Catalog - Workspace": {
+        "queryId": "09525139-0f70-4963-a91b-eceb4e9de29d",
+        "queryName": "Catalog - Workspace",
+        "loadEnabled": true
+      },
+      "Catalog-Snapshots": {
+        "queryId": "c908976a-f21c-4ade-8c35-1c851a9c99c2",
+        "queryName": "Catalog-Snapshots"
+      },
+      "Catalog - App": {
+        "queryId": "c549be49-2cfe-4790-bf9c-e2b00febb566",
+        "queryName": "Catalog - App",
+        "loadEnabled": true
+      },
+      "Catalog - Dataflow": {
+        "queryId": "7806d771-6901-4463-9685-7d76586b6b7d",
+        "queryName": "Catalog - Dataflow",
+        "loadEnabled": true
+      },
+      "Catalog - DataflowDataSource": {
+        "queryId": "914835dc-dd71-48b5-8f68-ca3bd757ff53",
+        "queryName": "Catalog - DataflowDataSource",
+        "loadEnabled": true
+      },
+      "Catalog - Datamart": {
+        "queryId": "8d11cd18-6b61-4fa9-975a-484284b9283f",
+        "queryName": "Catalog - Datamart",
+        "loadEnabled": true
+      },
+      "Catalog - DatamartDataSource": {
+        "queryId": "e8ded4fd-bfb5-4358-a945-00350227e17e",
+        "queryName": "Catalog - DatamartDataSource",
+        "loadEnabled": true
+      },
+      "Catalog - Permission": {
+        "queryId": "587a8191-596b-407c-859a-2de3f9e89e5a",
+        "queryName": "Catalog - Permission",
+        "loadEnabled": true
+      },
+      "Activity": {
+        "queryId": "cceafcbd-3512-4933-9620-69cbbae90915",
+        "queryName": "Activity",
+        "loadEnabled": true
+      },
+      "Graph-Files": {
+        "queryId": "fe7c1d81-b7c5-44c7-8a32-36bdc69913c7",
+        "queryName": "Graph-Files"
+      },
+      "O365SKUs": {
+        "queryId": "04e7a5b6-ffdd-4a47-b940-576e3d20cae3",
+        "queryName": "O365SKUs"
+      },
+      "Users - RAW": {
+        "queryId": "0b05cf05-16ed-4f95-8309-7674b1037ab4",
+        "queryName": "Users - RAW"
+      },
+      "User": {
+        "queryId": "2f1abb5d-7409-4a5f-8a63-82486b3981cc",
+        "queryName": "User",
+        "loadEnabled": true
+      },
+      "User - Licenses": {
+        "queryId": "5fe12d62-0273-47c2-a4f6-65b4e623f510",
+        "queryName": "User - Licenses",
+        "loadEnabled": true
+      }
+    },
+    "document": "section Section1;\r\nshared BlobStorageName = \"rrpbimonitorrrmsftstg\" meta [IsParameterQuery = true, IsParameterQueryRequired = true, Type = type text];\r\nshared BlobStorageContainerName = \"pbimonitor\" meta [IsParameterQuery = true, IsParameterQueryRequired = true, Type = type text];\r\n[Description = \"Timezone offset to be applied on the activity logs timestamps.#(lf)Default: 0 (UTC)\"]\r\nshared TimezoneOffset = 0 meta [IsParameterQuery = true, IsParameterQueryRequired = false, Type = type number];\r\n[Description = \"Activity Log file filter.\"]\r\nshared VarRangeStart = null;\r\n[Description = \"Activity Log file filter.\"]\r\nshared VarRangeEnd = null;\r\nshared #\"Activity-Files from BlobStorage\" = let\n    Source = AzureStorage.Blobs(BlobStorageName),\n    pbiusage = Source{[Name=BlobStorageContainerName]}[Data],\n    #\"Filtered Rows\" = Table.SelectRows(pbiusage, each [Extension] <> null and [Extension] <> \"\"),\n    #\"Filtered Rows2\" = Table.SelectRows(#\"Filtered Rows\", each Text.Contains([Name], \"/activity/\")),\n    #\"Removed Other Columns\" = Table.SelectColumns(#\"Filtered Rows2\",{\"Content\", \"Name\", \"Extension\"}),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns\",{{\"Name\", \"Filename\"}}),\n    #\"Removed Columns\" = Table.RemoveColumns(#\"Renamed Columns\",{\"Extension\"}),\n    #\"Extracted Text After Delimiter\" = Table.TransformColumns(#\"Removed Columns\", {{\"Filename\", each Text.AfterDelimiter(_, \"/\", {0, RelativePosition.FromEnd}), type text}})\nin\n    #\"Extracted Text After Delimiter\";\r\nshared #\"Catalog-Files from BlobStorage\" = let\n    Source = AzureStorage.Blobs(BlobStorageName),\n    pbicatalog1 = Source{[Name=BlobStorageContainerName]}[Data],\n    #\"Filtered Rows\" = Table.SelectRows(pbicatalog1, each [Extension] <> null and [Extension] <> \"\"),\n    #\"Filtered Rows1\" = Table.SelectRows(#\"Filtered Rows\", each Text.Contains([Name], \"/catalog/\")),\n    #\"Split Column by Delimiter\" = Table.SplitColumn(#\"Filtered Rows1\", \"Name\", Splitter.SplitTextByEachDelimiter({\"/\"}, QuoteStyle.Csv, true), {\"Name.1\", \"Name.2\"}),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Split Column by Delimiter\",{{\"Name.1\", \"Folder\"}, {\"Name.2\", \"Filename\"}}),\n    #\"Removed Other Columns\" = Table.SelectColumns(#\"Renamed Columns\",{\"Content\", \"Folder\", \"Filename\"}),\n    #\"Duplicated Column\" = Table.DuplicateColumn(#\"Removed Other Columns\", \"Folder\", \"Folder - Copy\"),\n    #\"Extracted Last Characters\" = Table.TransformColumns(#\"Duplicated Column\", {{\"Folder - Copy\", each Text.End(_, 10), type text}}),\n    #\"Renamed Columns1\" = Table.RenameColumns(#\"Extracted Last Characters\",{{\"Folder - Copy\", \"Date\"}}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns1\",{{\"Date\", type date}}),\n    #\"Added Custom\" = Table.AddColumn(#\"Changed Type\", \"FileType\", each if Text.Contains([Folder], \"/scans\") then \"scan\" else \"snapshot\"),\n    #\"Removed Other Columns1\" = Table.SelectColumns(#\"Added Custom\",{\"Content\", \"Filename\", \"Date\", \"FileType\"}),\n    #\"Lowercased Text\" = Table.TransformColumns(#\"Removed Other Columns1\",{{\"Filename\", Text.Lower, type text}})\nin\n    #\"Lowercased Text\";\r\nshared #\"Graph-Files from BlobStorage\" = let\n    Source = AzureStorage.Blobs(BlobStorageName),\n    msgraph = Source{[Name=BlobStorageContainerName]}[Data],\n    #\"Filtered Rows\" = Table.SelectRows(msgraph, each [Extension] <> null and [Extension] <> \"\"),\n    #\"Filtered Rows1\" = Table.SelectRows(#\"Filtered Rows\", each Text.Contains([Name], \"/graph/\")),\n    #\"Removed Other Columns\" = Table.SelectColumns(#\"Filtered Rows1\",{\"Content\", \"Name\"}),\n    #\"Split Column by Delimiter\" = Table.SplitColumn(#\"Removed Other Columns\", \"Name\", Splitter.SplitTextByEachDelimiter({\"/\"}, QuoteStyle.Csv, true), {\"Name.1\", \"Name.2\"}),\n    #\"Renamed Columns1\" = Table.RenameColumns(#\"Split Column by Delimiter\",{{\"Name.2\", \"Filename\"}, {\"Name.1\", \"Folder\"}}),\n    #\"Extracted Text After Delimiter\" = Table.TransformColumns(#\"Renamed Columns1\", {{\"Folder\", each Text.AfterDelimiter(_, \"graph/\", {0, RelativePosition.FromEnd}), type text}}),\n    #\"Renamed Columns2\" = Table.RenameColumns(#\"Extracted Text After Delimiter\",{{\"Folder\", \"Date\"}}),\n    #\"Changed Type1\" = Table.TransformColumnTypes(#\"Renamed Columns2\",{{\"Date\", type date}}),\n    #\"Lowercased Text\" = Table.TransformColumns(#\"Changed Type1\",{{\"Filename\", Text.Lower, type text}})\nin\n    #\"Lowercased Text\";\r\nshared FilesProxy = let\n    //  Source = [ActivityFiles = #\"Activity-Files from Folder\"\n    //  , CatalogFiles = #\"Catalog-Files from Folder\" \n    //  , GraphFiles = #\"Graph-Files from Folder\"\n    //  ]\n    Source = [ActivityFiles = #\"Activity-Files from BlobStorage\"\n    , CatalogFiles = #\"Catalog-Files from BlobStorage\" \n    , GraphFiles = #\"Graph-Files from BlobStorage\"\n    ]\n    // Source = [ActivityFiles = #\"Activity-Files from Lake\"\n    // , CatalogFiles = #\"Catalog-Files from Lake\" \n    // , GraphFiles = #\"Graph-Files from Lake\"\n    // ]\nin\n    Source;\r\nshared #\"Catalog-Files\" = let\n    Source =  FilesProxy[CatalogFiles]\nin\n    Source;\r\nshared #\"Catalog-Scans\" = let\r\n  Source = #\"Catalog-Files\",\r\n  #\"Filtered Rows1\" = Table.SelectRows(Source, each [FileType] = \"scan\"),\r\n  LastFullScanDate = Table.Max(Table.SelectRows(#\"Filtered Rows1\", each Text.Contains([Filename], \"fullscan\")), \"Date\")[Date]?,\r\n  #\"Filtered RowsAfterFullScan\" = Table.SelectRows(#\"Filtered Rows1\", each (LastFullScanDate = null or [Date] >= LastFullScanDate)),\r\n  #\"Added Custom\" = Table.AddColumn(#\"Filtered RowsAfterFullScan\", \"Data\", each Json.Document([Content])),\r\n  #\"Removed Other Columns\" = Table.SelectColumns(#\"Added Custom\", {\"Filename\", \"Date\", \"Data\"}),\r\n  #\"Expanded Data\" = Table.ExpandRecordColumn(#\"Removed Other Columns\", \"Data\", {\"workspaces\", \"datasourceInstances\", \"scanCreatedDateTime\", \"misconfiguredDatasourceInstances\"}, {\"workspaces\", \"datasourceInstances\", \"scanCreatedDateTime\", \"misconfiguredDatasourceInstances\"})\r\nin\r\n  #\"Expanded Data\";\r\nshared #\"Catalog-Workspaces LastScan\" = let\n    Source = #\"Catalog-Scans\",\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"workspaces\", \"scanCreatedDateTime\"}),\n    #\"Expanded Data.workspaces\" = Table.ExpandListColumn(#\"Removed Other Columns\", \"workspaces\"),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded Data.workspaces\",{{\"scanCreatedDateTime\", \"ScanDate\"}}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns\",{{\"ScanDate\", type datetime}}),\n    #\"Expanded Data.workspaces1\" = Table.ExpandRecordColumn(#\"Changed Type\", \"workspaces\", {\"id\", \"name\", \"type\", \"state\", \"isOnDedicatedCapacity\", \"reports\", \"dashboards\", \"datasets\", \"dataflows\", \"datamarts\", \"users\", \"description\", \"capacityId\"}, {\"id\", \"name\", \"type\", \"state\", \"isOnDedicatedCapacity\", \"reports\", \"dashboards\", \"datasets\", \"dataflows\", \"datamarts\", \"users\", \"description\", \"capacityId\"}),\n    #\"Grouped Rows\" = Table.Group(#\"Expanded Data.workspaces1\", {\"id\"}, {{\"AllRows\", each _, type table [id=text, name=text, type=text, state=text, isOnDedicatedCapacity=logical, reports=list, dashboards=list, datasets=list, dataflows=list, ScanDate=nullable datetime]}}),\n    #\"Added Custom\" = Table.AddColumn(#\"Grouped Rows\", \"LastScan\", each Table.First(Table.Sort([AllRows],  {\"ScanDate\", Order.Descending}))),\n    #\"Removed Columns\" = Table.RemoveColumns(#\"Added Custom\",{\"AllRows\"}),\n    #\"Added Custom3\" = Table.AddColumn(#\"Removed Columns\", \"LastScanJson\", each Text.FromBinary(Json.FromValue([LastScan]))),\n    #\"Removed Columns1\" = Table.RemoveColumns(#\"Added Custom3\",{\"LastScan\"}),\r\n  #\"Changed column type\" = Table.TransformColumnTypes(#\"Removed Columns1\", {{\"LastScanJson\", type text}, {\"id\", type text}})\nin\n    #\"Changed column type\";\r\nshared #\"Catalog - Workspaces RAW\" = let\n    Source = #\"Catalog-Workspaces LastScan\",\n    #\"Added Custom\" = Table.AddColumn(Source, \"Custom\", each Json.Document([LastScanJson])),\n    #\"Removed Columns\" = Table.RemoveColumns(#\"Added Custom\",{\"LastScanJson\"}),\n    #\"Expanded Custom\" = Table.ExpandRecordColumn(#\"Removed Columns\", \"Custom\", {\"name\", \"type\", \"state\", \"isOnDedicatedCapacity\", \"reports\", \"dashboards\", \"datasets\", \"dataflows\", \"datamarts\", \"users\", \"description\", \"capacityId\", \"ScanDate\"}, {\"name\", \"type\", \"state\", \"isOnDedicatedCapacity\", \"reports\", \"dashboards\", \"datasets\", \"dataflows\", \"datamarts\", \"users\", \"description\", \"capacityId\", \"ScanDate\"})\nin\n    #\"Expanded Custom\";\r\nshared #\"Catalog - Dataset RAW\" = let\r\n  Source = #\"Catalog - Workspaces RAW\",\r\n  #\"Removed Other Columns\" = Table.SelectColumns(Source, {\"id\", \"datasets\"}),\r\n  #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns\", {{\"id\", \"WorkspaceId\"}}),\r\n  #\"Filtered Rows\" = Table.SelectRows(#\"Renamed Columns\", each [datasets] <> null and List.Count([datasets]) <> 0),\r\n  #\"Expanded datasets\" = Table.ExpandListColumn(#\"Filtered Rows\", \"datasets\"),\r\n  #\"Expanded datasets1\" = Table.ExpandRecordColumn(#\"Expanded datasets\", \"datasets\", {\"id\", \"name\", \"tables\", \"configuredBy\", \"isEffectiveIdentityRequired\", \"isEffectiveIdentityRolesRequired\", \"targetStorageMode\", \"createdDate\", \"contentProviderType\", \"datasourceUsages\", \"sensitivityLabel\", \"relationships\", \"description\", \"endorsementDetails\", \"schemaMayNotBeUpToDate\"}, {\"id\", \"name\", \"tables\", \"configuredBy\", \"isEffectiveIdentityRequired\", \"isEffectiveIdentityRolesRequired\", \"targetStorageMode\", \"createdDate\", \"contentProviderType\", \"datasourceUsages\", \"sensitivityLabel\", \"relationships\", \"description\", \"endorsementDetails\", \"schemaMayNotBeUpToDate\"}),\r\n  #\"Expanded endorsementDetails\" = Table.ExpandRecordColumn(#\"Expanded datasets1\", \"endorsementDetails\", {\"endorsement\", \"certifiedBy\"}, {\"endorsement\", \"certifiedBy\"}),\r\n  #\"Renamed Columns1\" = Table.RenameColumns(#\"Expanded endorsementDetails\", {{\"id\", \"DatasetId\"}, {\"name\", \"Dataset\"}, {\"configuredBy\", \"Configured By\"}, {\"targetStorageMode\", \"Target Storage\"}, {\"createdDate\", \"Created On\"}, {\"contentProviderType\", \"Content Provider Type\"}}),\r\n  #\"Reordered Columns\" = Table.ReorderColumns(#\"Renamed Columns1\", {\"WorkspaceId\", \"DatasetId\", \"Dataset\", \"Configured By\", \"Target Storage\", \"Created On\", \"Content Provider Type\", \"datasourceUsages\", \"tables\", \"relationships\"}),\r\n  #\"Replaced Value\" = Table.ReplaceValue(#\"Reordered Columns\",null,each [WorkspaceId] & [Dataset],Replacer.ReplaceValue,{\"DatasetId\"}),\r\n  #\"Filtered Rows1\" = Table.SelectRows(#\"Replaced Value\", each [DatasetId] <> null and [DatasetId] <> \"\"),\r\n  #\"Renamed Columns2\" = Table.RenameColumns(#\"Filtered Rows1\", {{\"description\", \"Description\"}, {\"endorsement\", \"Endorsement\"}, {\"certifiedBy\", \"Certified By\"}, {\"schemaMayNotBeUpToDate\", \"Schema Issues\"}, {\"isEffectiveIdentityRequired\", \"Is EffectiveIdentity Required\"}, {\"isEffectiveIdentityRolesRequired\", \"Is EffectiveIdentity Roles Required\"}})\r\nin\r\n  #\"Renamed Columns2\";\r\nshared #\"Catalog - Dataflow RAW\" = let\n    Source = #\"Catalog - Workspaces RAW\",\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"id\", \"dataflows\"}),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns\",{{\"id\", \"WorkspaceId\"}}),\n    #\"Filtered Rows\" = Table.SelectRows(#\"Renamed Columns\", each [dataflows] <> null and List.Count([dataflows]) <> 0),\n    #\"Expanded datasets\" = Table.ExpandListColumn(#\"Filtered Rows\", \"dataflows\"),\n    #\"Expanded datasets1\" = Table.ExpandRecordColumn(#\"Expanded datasets\", \"dataflows\", {\"objectId\", \"name\", \"description\", \"configuredBy\", \"modifiedBy\", \"modifiedDateTime\", \"datasourceUsages\", \"endorsementDetails\"}, {\"objectId\", \"name\", \"description\", \"configuredBy\", \"modifiedBy\", \"modifiedDateTime\", \"datasourceUsages\", \"endorsementDetails\"}),\n    #\"Expanded endorsementDetails\" = Table.ExpandRecordColumn(#\"Expanded datasets1\", \"endorsementDetails\", {\"endorsement\", \"certifiedBy\"}, {\"endorsement\", \"certifiedBy\"}),\n    #\"Renamed Columns1\" = Table.RenameColumns(#\"Expanded endorsementDetails\",{{\"objectId\", \"DataflowId\"}, {\"name\", \"Dataflow\"}, {\"configuredBy\", \"Configured By\"}, {\"description\", \"Description\"}, {\"modifiedBy\", \"Modified By\"}, {\"modifiedDateTime\", \"Modified On\"}}),\n    #\"Reordered Columns\" = Table.ReorderColumns(#\"Renamed Columns1\",{\"WorkspaceId\", \"DataflowId\", \"Dataflow\", \"Configured By\", \"datasourceUsages\"}),\n    #\"Renamed Columns2\" = Table.RenameColumns(#\"Reordered Columns\",{{\"endorsement\", \"Endorsement\"}, {\"certifiedBy\", \"Certified By\"}})\nin\n    #\"Renamed Columns2\";\r\nshared #\"Catalog - Datamart RAW\" = let\n    Source = #\"Catalog - Workspaces RAW\",\n    #\"Removed Other Columns1\" = Table.SelectColumns(Source,{\"id\", \"datamarts\"}),\n    #\"Filtered Rows\" = Table.SelectRows(#\"Removed Other Columns1\", each [datamarts] <> null and List.Count([datamarts]) <> 0),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Filtered Rows\",{{\"id\", \"WorkspaceId\"}}),\n    #\"Expanded datamarts\" = Table.ExpandListColumn(#\"Renamed Columns\", \"datamarts\"),\n    #\"Expanded datamarts1\" = Table.ExpandRecordColumn(#\"Expanded datamarts\", \"datamarts\", {\"id\", \"name\", \"type\", \"configuredBy\", \"modifiedBy\", \"modifiedDateTime\", \"datasourceUsages\"}, {\"id\", \"name\", \"type\", \"configuredBy\", \"modifiedBy\", \"modifiedDateTime\", \"datasourceUsages\"}),\n    #\"Renamed Columns1\" = Table.RenameColumns(#\"Expanded datamarts1\",{{\"id\", \"Datamart Id\"}, {\"name\", \"Datamart\"}, {\"type\", \"Type\"}, {\"configuredBy\", \"Configured By\"}, {\"modifiedBy\", \"Modified By\"}, {\"modifiedDateTime\", \"Modified On\"}})\nin\n    #\"Renamed Columns1\";\r\nshared #\"Catalog - DataSource\" = let\r\n  Source = #\"Catalog-Scans\",\r\n  #\"Expanded Data.datasourceInstances\" = Table.ExpandListColumn(Source, \"datasourceInstances\"),\r\n  #\"Expanded Data.datasourceInstances1\" = Table.ExpandRecordColumn(#\"Expanded Data.datasourceInstances\", \"datasourceInstances\", {\"datasourceType\", \"connectionDetails\", \"datasourceId\", \"gatewayId\"}, {\"datasourceType\", \"connectionDetails\", \"datasourceId\", \"gatewayId\"}),\r\n  #\"Filtered Rows\" = Table.SelectRows(#\"Expanded Data.datasourceInstances1\", each [datasourceId] <> null and [datasourceId] <> \"\"),\r\n  #\"Added Custom\" = Table.AddColumn(#\"Filtered Rows\", \"Custom\", each if [connectionDetails] <> null then Text.Combine(Record.ToList([connectionDetails]), \"|\") else null),\r\n  #\"Renamed Columns\" = Table.RenameColumns(#\"Added Custom\", {{\"datasourceType\", \"DataSource Type\"}, {\"datasourceId\", \"DataSourceId\"}, {\"gatewayId\", \"GatewayId\"}}),\r\n  #\"Expanded connectionDetails\" = Table.ExpandRecordColumn(#\"Renamed Columns\", \"connectionDetails\", {\"url\", \"sharePointSiteUrl\", \"account\", \"domain\", \"server\", \"database\", \"path\", \"connectionString\"}, {\"Connection - .url\", \"Connection - .sharePointSiteUrl\", \"Connection - .account\", \"Connection - .domain\", \"Connection - .server\", \"Connection - .database\", \"Connection - .path\", \"Connection - .connectionString\"}),\r\n  #\"Renamed Columns1\" = Table.RenameColumns(#\"Expanded connectionDetails\", {{\"Connection - .url\", \"Connection - URL\"}, {\"Connection - .sharePointSiteUrl\", \"Connection - SharePointSiteUrl\"}, {\"Connection - .account\", \"Connection - Account\"}, {\"Connection - .domain\", \"Connection - Domain\"}, {\"Connection - .server\", \"Connection - Server\"}, {\"Connection - .database\", \"Connection - Database\"}, {\"Connection - .path\", \"Connection - Path\"}, {\"Connection - .connectionString\", \"Connection - ConnectionString\"}, {\"Custom\", \"Connection - Details\"}}),\r\n  #\"Reordered Columns\" = Table.ReorderColumns(#\"Renamed Columns1\", {\"DataSourceId\", \"GatewayId\", \"DataSource Type\", \"Connection - URL\", \"Connection - SharePointSiteUrl\", \"Connection - Account\", \"Connection - Domain\", \"Connection - Server\", \"Connection - Database\", \"Connection - Path\", \"Connection - ConnectionString\", \"Connection - Details\"}),\r\n  #\"Changed Type\" = Table.TransformColumnTypes(#\"Reordered Columns\", {{\"DataSourceId\", type text}, {\"GatewayId\", type text}, {\"DataSource Type\", type text}, {\"Connection - URL\", type text}, {\"Connection - SharePointSiteUrl\", type text}, {\"Connection - Account\", type text}, {\"Connection - Domain\", type text}, {\"Connection - Server\", type text}, {\"Connection - Database\", type text}, {\"Connection - Path\", type text}, {\"Connection - ConnectionString\", type text}, {\"Connection - Details\", type text}}),\r\n  #\"Removed Duplicates\" = Table.Distinct(#\"Changed Type\", {\"DataSourceId\"}),\r\n  #\"Removed columns\" = Table.RemoveColumns(#\"Removed Duplicates\", {\"workspaces\", \"misconfiguredDatasourceInstances\"}),\r\n  #\"Transform columns\" = Table.TransformColumnTypes(#\"Removed columns\", {{\"scanCreatedDateTime\", type text}}),\r\n  #\"Replace errors\" = Table.ReplaceErrorValues(#\"Transform columns\", {{\"scanCreatedDateTime\", null}})\r\nin\r\n  #\"Replace errors\";\r\nshared #\"Catalog - DatasetDataSource\" = let\r\n  Source = #\"Catalog - Dataset RAW\",\r\n  #\"Removed Other Columns\" = Table.SelectColumns(Source, {\"DatasetId\", \"datasourceUsages\"}),\r\n  #\"Filtered Rows\" = Table.SelectRows(#\"Removed Other Columns\", each [datasourceUsages] <> null),\r\n  #\"Expanded datasourceUsages\" = Table.ExpandListColumn(#\"Filtered Rows\", \"datasourceUsages\"),\r\n  #\"Expanded datasourceUsages1\" = Table.ExpandRecordColumn(#\"Expanded datasourceUsages\", \"datasourceUsages\", {\"datasourceInstanceId\"}, {\"datasourceInstanceId\"}),\r\n  #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded datasourceUsages1\", {{\"datasourceInstanceId\", \"DataSourceId\"}}),\r\n  #\"Transform columns\" = Table.TransformColumnTypes(#\"Renamed Columns\", {{\"DataSourceId\", type text}}),\r\n  #\"Replace errors\" = Table.ReplaceErrorValues(#\"Transform columns\", {{\"DataSourceId\", null}}),\r\n  #\"Transform columns 1\" = Table.TransformColumnTypes(#\"Replace errors\", {{\"DatasetId\", type text}}),\r\n  #\"Replace errors 1\" = Table.ReplaceErrorValues(#\"Transform columns 1\", {{\"DatasetId\", null}})\r\nin\r\n  #\"Replace errors 1\";\r\nshared #\"Catalog - Report\" = let\n    Source = #\"Catalog - Workspaces RAW\",\n    #\"Removed Other Columns1\" = Table.SelectColumns(Source,{\"id\", \"reports\"}),\n    #\"Filtered Rows\" = Table.SelectRows(#\"Removed Other Columns1\", each [reports] <> null and List.Count([reports]) <> 0),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Filtered Rows\",{{\"id\", \"WorkspaceId\"}}),\n    #\"Expanded reports\" = Table.ExpandListColumn(#\"Renamed Columns\", \"reports\"),\n    #\"Expanded reports1\" = Table.ExpandRecordColumn(#\"Expanded reports\", \"reports\", {\"id\", \"name\", \"datasetId\", \"createdDateTime\", \"modifiedDateTime\", \"modifiedBy\", \"appId\", \"endorsementDetails\", \"reportType\", \"sensitivityLabel\"}, {\"id\", \"name\", \"datasetId\", \"createdDateTime\", \"modifiedDateTime\", \"modifiedBy\", \"appId\", \"endorsementDetails\", \"reportType\", \"sensitivityLabel\"\n}),\n    #\"Renamed Columns1\" = Table.RenameColumns(#\"Expanded reports1\",{{\"id\", \"ReportId\"}, {\"name\", \"Report\"}, {\"datasetId\", \"DatasetId\"}, {\"createdDateTime\", \"Created On\"}, {\"modifiedDateTime\", \"Modified On\"}, {\"modifiedBy\", \"Modified By\"}, {\"appId\", \"AppId\"}, {\"endorsementDetails\", \"Endorsement\"}, {\"reportType\", \"Type\"}}),\n    #\"Expanded Endorsement\" = Table.ExpandRecordColumn(#\"Renamed Columns1\", \"Endorsement\", {\"endorsement\", \"certifiedBy\"}, {\"endorsement.1\", \"certifiedBy\"}),\n    #\"Renamed Columns2\" = Table.RenameColumns(#\"Expanded Endorsement\",{{\"endorsement.1\", \"Endorsement\"}, {\"certifiedBy\", \"Certified By\"}}),\n    #\"Added Custom\" = Table.AddColumn(#\"Renamed Columns2\", \"Sentivity Label\", each if [sensitivityLabel] <> null then Text.Combine(Record.ToList([sensitivityLabel]), \"|\") else null),\n    #\"Removed Columns\" = Table.RemoveColumns(#\"Added Custom\",{\"sensitivityLabel\"}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Removed Columns\",{{\"WorkspaceId\", type text}, {\"ReportId\", type text}, {\"Report\", type text}, {\"DatasetId\", type text}, {\"Created On\", type datetime}, {\"Modified On\", type datetime}, {\"Modified By\", type text}, {\"Type\", type text}, {\"AppId\", type text}, {\"Endorsement\", type text}, {\"Certified By\", type text}, {\"Sentivity Label\", type text}}),\n    #\"Replaced Value\" = Table.ReplaceValue(#\"Changed Type\",null,\"Report\",Replacer.ReplaceValue,{\"Type\"})\nin\n    #\"Replaced Value\";\r\nshared #\"Catalog - Dashboard\" = let\n    Source = #\"Catalog - Workspaces RAW\",\n    #\"Removed Other Columns1\" = Table.SelectColumns(Source,{\"id\", \"dashboards\"}),\n    #\"Filtered Rows\" = Table.SelectRows(#\"Removed Other Columns1\", each [dashboards] <> null and List.Count([dashboards]) <> 0),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Filtered Rows\",{{\"id\", \"WorkspaceId\"}}),\n    #\"Expanded reports\" = Table.ExpandListColumn(#\"Renamed Columns\", \"dashboards\"),\n    #\"Expanded dashboards\" = Table.ExpandRecordColumn(#\"Expanded reports\", \"dashboards\", {\"id\", \"displayName\", \"isReadOnly\", \"appId\"}, {\"id\", \"displayName\", \"isReadOnly\", \"appId\"}),\n    #\"Renamed Columns1\" = Table.RenameColumns(#\"Expanded dashboards\",{{\"id\", \"DashboardId\"}, {\"displayName\", \"Dashboard\"}, {\"isReadOnly\", \"Is ReadOnly (Y/N)\"}, {\"appId\", \"AppId\"}}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns1\",{{\"Is ReadOnly (Y/N)\", type logical}, {\"WorkspaceId\", type text}, {\"DashboardId\", type text}, {\"Dashboard\", type text}, {\"AppId\", type text}})\nin\n    #\"Changed Type\";\r\nshared #\"Catalog - Dataset\" = let\n    Source = #\"Catalog - Dataset RAW\",\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"WorkspaceId\", \"DatasetId\", \"Dataset\", \"Configured By\", \"Target Storage\", \"Is EffectiveIdentity Required\", \"Is EffectiveIdentity Roles Required\", \"Created On\", \"Content Provider Type\", \"sensitivityLabel\", \"Description\", \"Endorsement\", \"Certified By\", \"Schema Issues\"}),\n    #\"Added Custom\" = Table.AddColumn(#\"Removed Other Columns\", \"Sensitivity Label\", each if [sensitivityLabel] <> null then Text.Combine(Record.ToList([sensitivityLabel]), \"|\") else null),\n    #\"Removed Columns\" = Table.RemoveColumns(#\"Added Custom\",{\"sensitivityLabel\"}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Removed Columns\",{{\"WorkspaceId\", type text}, {\"DatasetId\", type text}, {\"Dataset\", type text}, {\"Configured By\", type text}, {\"Target Storage\", type text}, {\"Created On\", type datetime}, {\"Content Provider Type\", type text}, {\"Description\", type text}, {\"Endorsement\", type text}, {\"Certified By\", type text}, {\"Schema Issues\", type logical}, {\"Sensitivity Label\", type text}, {\"Is EffectiveIdentity Required\", type logical}, {\"Is EffectiveIdentity Roles Required\", type logical}})\nin\n    #\"Changed Type\";\r\nshared #\"Catalog - Workspace\" = let\n    Source = #\"Catalog - Workspaces RAW\",\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"id\", \"name\", \"type\", \"state\", \"isOnDedicatedCapacity\", \"description\", \"capacityId\"}),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns\",{{\"id\", \"WorkspaceId\"}, {\"isOnDedicatedCapacity\", \"Is Dedicated Capacity (Y/N)\"}, {\"name\", \"Workspace\"}, {\"state\", \"State\"}, {\"type\", \"Type\"}, {\"description\", \"Description\"}, {\"capacityId\", \"CapacityId\"}}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns\",{{\"WorkspaceId\", type text}, {\"Workspace\", type text}, {\"Type\", type text}, {\"State\", type text}, {\"Is Dedicated Capacity (Y/N)\", type logical}, {\"CapacityId\", type text}, {\"Description\", type text}})\nin\n    #\"Changed Type\";\r\nshared #\"Catalog-Snapshots\" = let\n    Source = #\"Catalog-Files\",\n    #\"Filtered Rows1\" = Table.SelectRows(Source, each [FileType] = \"snapshot\"),\n    #\"Filtered Rows\" = Table.SelectRows(#\"Filtered Rows1\", let latest = List.Max(#\"Filtered Rows1\"[Date]) in each [Date] = latest),\n    #\"Added Custom\" = Table.AddColumn(#\"Filtered Rows\", \"Data\", each Json.Document([Content]))\nin\n    #\"Added Custom\";\r\nshared #\"Catalog - App\" = let\r\n  Source = #\"Catalog-Snapshots\",\r\n  FilterFile = Table.SelectRows(Source, each [Filename] = \"apps.json\"),\r\n  ReadJSON = Table.AddColumn(FilterFile, \"Custom\", each Json.Document([Content])),\r\n  RemoveFileColumns = Table.SelectColumns(ReadJSON, {\"Custom\"}),\r\n  ExpandRecordColumn = Table.ExpandListColumn(RemoveFileColumns, \"Custom\"),\r\n  #\"Expanded Content1\" = Table.ExpandRecordColumn(ExpandRecordColumn, \"Custom\", {\"id\", \"name\", \"lastUpdate\", \"description\", \"publishedBy\"}, {\"id\", \"name\", \"lastUpdate\", \"description\", \"publishedBy\"}),\r\n  #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded Content1\", {{\"id\", \"AppId\"}, {\"name\", \"App\"}, {\"lastUpdate\", \"Last Updated\"}, {\"description\", \"Description\"}}),\r\n  #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns\", {{\"Last Updated\", type datetime}, {\"Description\", type text}, {\"App\", type text}, {\"AppId\", type text}}),\r\n  #\"Renamed Columns1\" = Table.RenameColumns(#\"Changed Type\", {{\"publishedBy\", \"Published By\"}}),\r\n  #\"Transform columns\" = Table.TransformColumnTypes(#\"Renamed Columns1\", {{\"Published By\", type text}}),\r\n  #\"Replace errors\" = Table.ReplaceErrorValues(#\"Transform columns\", {{\"Published By\", null}})\r\nin\r\n  #\"Replace errors\";\r\nshared #\"Catalog - Dataflow\" = let\n    Source = #\"Catalog - Dataflow RAW\",\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"WorkspaceId\", \"DataflowId\", \"Dataflow\", \"Description\", \"Configured By\", \"Modified By\", \"Modified On\", \"Endorsement\", \"Certified By\"}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Removed Other Columns\",{{\"WorkspaceId\", type text}, {\"DataflowId\", type text}, {\"Dataflow\", type text}, {\"Description\", type text}, {\"Configured By\", type text}, {\"Modified By\", type text}, {\"Modified On\", type datetime}, {\"Endorsement\", type text}, {\"Certified By\", type text}})\nin\n    #\"Changed Type\";\r\nshared #\"Catalog - DataflowDataSource\" = let\r\n  Source = #\"Catalog - Dataflow RAW\",\r\n  #\"Removed Other Columns\" = Table.SelectColumns(Source, {\"DataflowId\", \"datasourceUsages\"}),\r\n  #\"Filtered Rows\" = Table.SelectRows(#\"Removed Other Columns\", each [datasourceUsages] <> null),\r\n  #\"Expanded datasourceUsages\" = Table.ExpandListColumn(#\"Filtered Rows\", \"datasourceUsages\"),\r\n  #\"Expanded datasourceUsages1\" = Table.ExpandRecordColumn(#\"Expanded datasourceUsages\", \"datasourceUsages\", {\"datasourceInstanceId\"}, {\"datasourceInstanceId\"}),\r\n  #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded datasourceUsages1\", {{\"datasourceInstanceId\", \"DataSourceId\"}}),\r\n  #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns\", {{\"DataSourceId\", type text}}),\r\n  #\"Transform columns\" = Table.TransformColumnTypes(#\"Changed Type\", {{\"DataflowId\", type text}}),\r\n  #\"Replace errors\" = Table.ReplaceErrorValues(#\"Transform columns\", {{\"DataflowId\", null}})\r\nin\r\n  #\"Replace errors\";\r\nshared #\"Catalog - Datamart\" = let\n    Source = #\"Catalog - Datamart RAW\",\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"WorkspaceId\", \"Datamart Id\", \"Datamart\", \"Type\", \"Configured By\", \"Modified By\", \"Modified On\"}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Removed Other Columns\",{{\"WorkspaceId\", type text}, {\"Datamart Id\", type text}, {\"Datamart\", type text}, {\"Type\", type text}, {\"Configured By\", type text}, {\"Modified By\", type text}, {\"Modified On\", type datetime}})\nin\n    #\"Changed Type\";\r\nshared #\"Catalog - DatamartDataSource\" = let\r\n  Source = #\"Catalog - Datamart RAW\",\r\n  #\"Removed Other Columns\" = Table.SelectColumns(Source, {\"Datamart Id\", \"datasourceUsages\"}),\r\n  #\"Filtered Rows\" = Table.SelectRows(#\"Removed Other Columns\", each [datasourceUsages] <> null),\r\n  #\"Expanded datasourceUsages\" = Table.ExpandListColumn(#\"Filtered Rows\", \"datasourceUsages\"),\r\n  #\"Expanded datasourceUsages1\" = Table.ExpandRecordColumn(#\"Expanded datasourceUsages\", \"datasourceUsages\", {\"datasourceInstanceId\"}, {\"datasourceInstanceId\"}),\r\n  #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded datasourceUsages1\", {{\"datasourceInstanceId\", \"DataSourceId\"}}),\r\n  #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns\", {{\"DataSourceId\", type text}}),\r\n  #\"Transform columns\" = Table.TransformColumnTypes(#\"Changed Type\", {{\"Datamart Id\", type text}}),\r\n  #\"Replace errors\" = Table.ReplaceErrorValues(#\"Transform columns\", {{\"Datamart Id\", null}})\r\nin\r\n  #\"Replace errors\";\r\nshared #\"Catalog - Permission\" = let\n    Source = #\"Catalog - Workspaces RAW\",\n\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"id\", \"reports\", \"datasets\", \"dataflows\", \"datamarts\", \"users\", \"dashboards\"}),\n\n    fnReadUsersProperty = (listOfRecords as any, columnList as list, renameList as list, objectType as text) as any =>\n        let\n            source = Table.FromRecords(listOfRecords, {\"id\", \"objectId\", \"users\"}, MissingField.UseNull),\n            colSelection = Table.SelectColumns(source,{\"id\", \"objectId\", \"users\"}, MissingField.UseNull),\n            objectIdColumn = Table.AddColumn(colSelection, \"ObjectId\", each if ([id] <> null) then [id] else [objectId]),\n            removIdColumns = Table.RemoveColumns(objectIdColumn,{\"id\", \"objectId\"}),\n            filterUsers = Table.SelectRows(removIdColumns, each [users] <> null and List.Count([users]) <> 0),\n            expandList = Table.ExpandListColumn(filterUsers, \"users\"),\n            expandUsers = Table.ExpandRecordColumn(expandList, \"users\", columnList, columnList),\n            rename = Table.RenameColumns(expandUsers,renameList),\n            newcolumn = Table.AddColumn(rename, \"Object Type\", each objectType),\n            final = if(listOfRecords <> null and List.Count(listOfRecords) <> 0) then newcolumn else null\n            in\n            final,\n    \n    WorkspaceUsers = Table.AddColumn(#\"Removed Other Columns\", \"workspace.users\", each fnReadUsersProperty({[id=[id], users=[users]]}, {\"groupUserAccessRight\", \"displayName\", \"identifier\", \"graphId\", \"principalType\"}, {{\"groupUserAccessRight\", \"Access Right\"}, {\"displayName\", \"Principal\"}, {\"identifier\", \"PrincipalId\"}, {\"graphId\", \"PrincipalGraphId\"}, {\"principalType\", \"Principal Type\"}}, \"Workspace\")),\n    ReportsUsers = Table.AddColumn(WorkspaceUsers, \"reports.users\", each fnReadUsersProperty([reports], {\"reportUserAccessRight\", \"displayName\", \"identifier\", \"graphId\", \"principalType\"}, {{\"reportUserAccessRight\", \"Access Right\"}, {\"displayName\", \"Principal\"}, {\"identifier\", \"PrincipalId\"}, {\"graphId\", \"PrincipalGraphId\"}, {\"principalType\", \"Principal Type\"}}, \"Report\")),\n    DatasetsUsers = Table.AddColumn( ReportsUsers, \"datasets.users\", each fnReadUsersProperty([datasets], {\"datasetUserAccessRight\", \"displayName\", \"identifier\", \"graphId\", \"principalType\"}, {{\"datasetUserAccessRight\", \"Access Right\"}, {\"displayName\", \"Principal\"}, {\"identifier\", \"PrincipalId\"}, {\"graphId\", \"PrincipalGraphId\"}, {\"principalType\", \"Principal Type\"}}, \"Dataset\")),\n    DashboardsUsers = Table.AddColumn( DatasetsUsers, \"dashboards.users\", each fnReadUsersProperty([dashboards], {\"dashboardUserAccessRight\", \"displayName\", \"identifier\", \"graphId\", \"principalType\"}, {{\"dashboardUserAccessRight\", \"Access Right\"}, {\"displayName\", \"Principal\"}, {\"identifier\", \"PrincipalId\"}, {\"graphId\", \"PrincipalGraphId\"}, {\"principalType\", \"Principal Type\"}}, \"Dashboard\")),\n    DataflowsUsers = Table.AddColumn( DashboardsUsers, \"dataflows.users\", each fnReadUsersProperty([dataflows], {\"dataflowUserAccessRight\", \"displayName\", \"identifier\", \"graphId\", \"principalType\"}, {{\"dataflowUserAccessRight\", \"Access Right\"}, {\"displayName\", \"Principal\"}, {\"identifier\", \"PrincipalId\"}, {\"graphId\", \"PrincipalGraphId\"}, {\"principalType\", \"Principal Type\"}}, \"Dataflow\")),\n    DatamartsUsers = Table.AddColumn( DataflowsUsers, \"datamarts.users\", each fnReadUsersProperty([datamarts], {\"datamartUserAccessRight\", \"displayName\", \"identifier\", \"graphId\", \"principalType\"}, {{\"datamartUserAccessRight\", \"Access Right\"}, {\"displayName\", \"Principal\"}, {\"identifier\", \"PrincipalId\"}, {\"graphId\", \"PrincipalGraphId\"}, {\"principalType\", \"Principal Type\"}}, \"Datamart\")),\n    Final =  Table.AddColumn(DatamartsUsers, \"Final\", each Table.Combine(List.RemoveNulls({[workspace.users], [reports.users], [datasets.users], [dashboards.users], [dataflows.users], [datamarts.users]}))),\n    #\"Removed Other Columns1\" = Table.SelectColumns(Final,{\"id\", \"Final\"}),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns1\",{{\"id\", \"WorkspaceId\"}}),\n    #\"Expanded Final\" = Table.ExpandTableColumn(#\"Renamed Columns\", \"Final\", {\"Access Right\", \"Principal\", \"PrincipalId\", \"PrincipalGraphId\", \"Principal Type\", \"ObjectId\", \"Object Type\"}, {\"Access Right\", \"Principal\", \"PrincipalId\", \"PrincipalGraphId\", \"Principal Type\", \"ObjectId\", \"Object Type\"}),\n    #\"Filtered Rows\" = Table.SelectRows(#\"Expanded Final\", each ([Access Right] <> null)),\n    #\"Renamed Columns1\" = Table.RenameColumns(#\"Filtered Rows\",{{\"Principal\", \"Identity\"}, {\"PrincipalId\", \"IdentityId\"}, {\"PrincipalGraphId\", \"IdentityGraphId\"}, {\"Principal Type\", \"Identity Type\"}}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns1\",{{\"WorkspaceId\", type text}, {\"Access Right\", type text}, {\"Identity\", type text}, {\"IdentityId\", type text}, {\"IdentityGraphId\", type text}, {\"Identity Type\", type text}, {\"ObjectId\", type text}, {\"Object Type\", type text}})\nin\n    #\"Changed Type\";\r\nshared Activity = let\n  ActivityFiles = let\n    Source = FilesProxy[ActivityFiles],\n    #\"Duplicated Column\" = Table.DuplicateColumn(Source, \"Filename\", \"Filename - Copy\"),\n    #\"Removed Columns\" = Table.RemoveColumns(#\"Duplicated Column\",{\"Filename - Copy\"}),\n    #\"Added Custom\" = Table.AddColumn(#\"Removed Columns\", \"FileDate\", each Text.BeforeDelimiter(Text.BeforeDelimiter([Filename], \".\"), \"_\") & \"T00:00\"),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Added Custom\",{{\"FileDate\", type datetime}})      \n  in\n      #\"Changed Type\",\n  Source = ActivityFiles,\n  #\"IncrementalRefreshFilter\" = Table.SelectRows(Source, each VarRangeStart = null or VarRangeEnd = null or (DateTime.From([FileDate]) >= VarRangeStart and DateTime.From([FileDate]) < VarRangeEnd)),\n    #\"Added Custom0\" = Table.AddColumn(IncrementalRefreshFilter, \"Custom\", each Json.Document([Content])),\n  #\"Removed Other Columns1\" = Table.SelectColumns(#\"Added Custom0\", {\"Filename\", \"Custom\", \"FileDate\"}),\n  #\"Expanded Custom2\" = Table.ExpandListColumn(#\"Removed Other Columns1\", \"Custom\"),\n  ExpandJsonProperties = Table.ExpandRecordColumn(#\"Expanded Custom2\", \"Custom\", {\"Id\", \"RecordType\", \"CreationTime\", \"Operation\", \"OrganizationId\", \"UserType\", \"UserKey\", \"Workload\", \"UserId\", \"ClientIP\", \"UserAgent\", \"Activity\", \"IsSuccess\", \"ItemName\", \"WorkSpaceName\", \"DatasetName\", \"ReportName\", \"CapacityId\", \"CapacityName\", \"WorkspaceId\", \"ObjectId\", \"ReportId\", \"ReportType\", \"DistributionMethod\", \"ModelsSnapshots\", \"DatasetId\", \"DataConnectivityMode\", \"RefreshType\", \"ConsumptionMethod\", \"AppName\", \"AppReportId\", \"EmbedTokenId\", \"DashboardName\", \"DashboardId\", \"SharingAction\", \"Datasets\", \"ImportId\", \"ImportSource\", \"ImportType\", \"ImportDisplayName\", \"RLSIdentities\", \"DataflowName\", \"DataflowType\", \"GatewayName\", \"Datasources\", \"DataflowRefreshScheduleType\", \"TileText\"}, {\"Id\", \"RecordType\", \"CreationTime\", \"Operation\", \"OrganizationId\", \"UserType\", \"UserKey\", \"Workload\", \"UserId\", \"ClientIP\", \"UserAgent\", \"Activity\", \"IsSuccess\", \"ItemName\", \"WorkSpaceName\", \"DatasetName\", \"ReportName\", \"CapacityId\", \"CapacityName\", \"WorkspaceId\", \"ObjectId\", \"ReportId\", \"ReportType\", \"DistributionMethod\", \"ModelsSnapshots\", \"DatasetId\", \"DataConnectivityMode\", \"RefreshType\", \"ConsumptionMethod\", \"AppName\", \"AppReportId\", \"EmbedTokenId\", \"DashboardName\", \"DashboardId\", \"SharingAction\", \"Datasets\", \"ImportId\", \"ImportSource\", \"ImportType\", \"ImportDisplayName\", \"RLSIdentities\", \"DataflowName\", \"DataflowType\", \"GatewayName\", \"Datasources\", \"DataflowRefreshScheduleType\", \"TileText\"}),\n    #\"Filtered Rows\" = Table.SelectRows(ExpandJsonProperties, each [Id] <> null and [Id] <> \"\"),\n  // Transform\n  #\"Changed Type\" = Table.TransformColumnTypes(#\"Filtered Rows\", {{\"CreationTime\", type datetime}}),\n  VarTimezoneOffset = if(TimezoneOffset <> null) then TimezoneOffset else 0,\n  AddTimeZoneOffSet = Table.AddColumn(#\"Changed Type\", \"CreationTimeOffset\", each DateTime.From([CreationTime]) + #duration(0,VarTimezoneOffset,0,0)),\n  #\"Removed Columns\" = Table.RemoveColumns(AddTimeZoneOffSet, {\"CreationTime\"}),\n  #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Columns\", {{\"CreationTimeOffset\", \"CreationTime\"}}),\n  #\"Inserted Time\" = Table.AddColumn(#\"Renamed Columns\", \"TimeId\", each Time.ToText(Time.From([CreationTime]), \"HHmm\")),\n  #\"Added Custom2\" = Table.AddColumn(#\"Inserted Time\", \"Date\", each DateTime.Date([CreationTime])),\n  #\"Added Conditional Column\" = Table.AddColumn(#\"Added Custom2\", \"OperativeSystem\", each if [UserAgent] = null then \"Unknown\" else if Text.Contains([UserAgent], \"Android\") then \"Android\" else if Text.Contains([UserAgent], \"iPhone\") then \"iPhone\" else if Text.Contains([UserAgent], \"Macintosh\") then \"OS X\" else if Text.Contains([UserAgent], \"Windows\") then \"Windows\" else \"Other\"),\n  #\"Removed Other Columns2\" = Table.SelectColumns(#\"Added Conditional Column\", {\"FileDate\", \"Operation\", \"UserId\", \"ClientIP\", \"UserAgent\", \"ItemName\", \"WorkSpaceName\", \"DatasetName\", \"ReportName\", \"WorkspaceId\", \"DatasetId\", \"ReportId\", \"ReportType\", \"DistributionMethod\", \"ConsumptionMethod\", \"AppName\", \"DashboardName\", \"DashboardId\", \"SharingAction\", \"CapacityId\", \"CapacityName\", \"DataflowName\", \"CreationTime\", \"TimeId\", \"Date\", \"OperativeSystem\"}),\n  #\"Renamed Columns2\" = Table.RenameColumns(#\"Removed Other Columns2\", {{\"ReportName\", \"Report\"}, {\"DatasetName\", \"Dataset\"}, {\"WorkSpaceName\", \"Workspace\"}, {\"DashboardName\", \"Dashboard\"}, {\"CreationTime\", \"Creation Time\"}, {\"ItemName\", \"Item Name\"}, {\"OperativeSystem\", \"Operative System\"}, {\"DistributionMethod\", \"Distribution Method\"}, {\"ConsumptionMethod\", \"Consumption Method\"}, {\"AppName\", \"App\"}, {\"CapacityName\", \"Capacity\"}, {\"CapacityId\", \"CapacityId\"}, {\"DataflowName\", \"Dataflow\"}, {\"ReportType\", \"Report Type\"}, {\"SharingAction\", \"Sharing Action\"}}),\n  #\"Lowercased Text\" = Table.TransformColumns(#\"Renamed Columns2\",{{\"UserId\", Text.Lower, type text}}),\n  #\"Changed Type1\" = Table.TransformColumnTypes(#\"Lowercased Text\", {{\"UserAgent\", type text}}),\n  WorkspaceType = Table.AddColumn(#\"Changed Type1\", \"Workspace Type\", each if [Workspace] = null then null else if Text.StartsWith([Workspace], \"PersonalWorkspace\") then \"Personal\" else \"Workspace\"),\n  #\"Changed Type3\" = Table.TransformColumnTypes(WorkspaceType, {{\"Creation Time\", type datetime}, {\"Operation\", type text}, {\"UserId\", type text}, {\"UserAgent\", type text}, {\"Item Name\", type text}, {\"WorkspaceId\", type text}, {\"ReportId\", type text}, {\"DashboardId\", type text}, {\"Date\", type date}, {\"DatasetId\", type text}, {\"Operative System\", type text}, {\"TimeId\", Int64.Type}, {\"Workspace\", type text}, {\"Dataset\", type text}, {\"Report\", type text}, {\"Dashboard\", type text}, {\"Workspace Type\", type text}, {\"Consumption Method\", type text}, {\"Distribution Method\", type text}, {\"App\", type text}, {\"CapacityId\", type text}, {\"Capacity\", type text}, {\"Report Type\", type text}, {\"Dataflow\", type text}, {\"ClientIP\", type text}, {\"Sharing Action\", type text}}),\n  #\"Duplicated Column\" = Table.DuplicateColumn(#\"Changed Type3\", \"UserId\", \"UserId - Copy\"),\n  #\"Extracted Text After Delimiter\" = Table.TransformColumns(#\"Duplicated Column\", {{\"UserId - Copy\", each Text.AfterDelimiter(_, \"@\"), type text}}),\n  #\"Renamed Columns1\" = Table.RenameColumns(#\"Extracted Text After Delimiter\", {{\"UserId - Copy\", \"User Tenant\"}}),\n  #\"Replaced Value\" = Table.ReplaceValue(#\"Renamed Columns1\", \"\", \"unknown\", Replacer.ReplaceValue, {\"User Tenant\"}),\n  #\"Added Custom\" = Table.AddColumn(#\"Replaced Value\", \"Consumption Method (Original)\", each if [Consumption Method] = null and [Item Name] <> null and Text.StartsWith([Operation], \"View\") then \"Power BI Web\" else if [Consumption Method] = null then \"Unknown\"\n    else [Consumption Method]),\n  #\"Removed Columns1\" = Table.RemoveColumns(#\"Added Custom\", {\"Consumption Method\"}),\n  #\"Changed Type2\" = Table.TransformColumnTypes(#\"Removed Columns1\",{{\"Consumption Method (Original)\", type text}, {\"FileDate\", type datetime}}),\n    #\"Replaced Value1\" = Table.ReplaceValue(#\"Changed Type2\",\"\",null,Replacer.ReplaceValue,{\"UserAgent\"})\nin\n    #\"Replaced Value1\";\r\nshared #\"Graph-Files\" = let\n    Source = FilesProxy[GraphFiles],\n    #\"Filtered Rows\" = Table.SelectRows(Source, let latest = List.Max(Source[Date]) in each [Date] = latest)\nin\n    //#\"Uppercased Text\"\n    #\"Filtered Rows\";\r\nshared O365SKUs = let\n    Source = #\"Graph-Files\",\n    FilterFile = Table.SelectRows(Source, each ([Filename] = \"subscribedskus.json\")),\n    ReadJSON = Table.AddColumn(FilterFile, \"Custom\", each Json.Document([Content])),\n    RemoveFileColumns = Table.SelectColumns(ReadJSON,{\"Custom\"}),\n    ExpandRecordColumn = Table.ExpandListColumn(RemoveFileColumns, \"Custom\"),\n    #\"Expanded Custom\" = Table.ExpandRecordColumn(ExpandRecordColumn, \"Custom\", {\"skuId\", \"skuPartNumber\"}, {\"skuId\", \"skuPartNumber\"}),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded Custom\",{{\"skuId\", \"SkuId\"}, {\"skuPartNumber\", \"SKU\"}})\nin\n    #\"Renamed Columns\";\r\nshared #\"Users - RAW\" = let\n    Source = #\"Graph-Files\",\n    FilterFile = Table.SelectRows(Source, each ([Filename] = \"users.json\")),\n    ReadJSON = Table.AddColumn(FilterFile, \"Custom\", each Json.Document([Content])),\n    RemoveFileColumns = Table.SelectColumns(ReadJSON,{\"Custom\"}),\n    ExpandRecordColumn = Table.ExpandListColumn(RemoveFileColumns, \"Custom\"),\n    #\"Expanded Column1\" = Table.ExpandRecordColumn(ExpandRecordColumn, \"Custom\", {\"displayName\", \"userPrincipalName\", \"assignedLicenses\"}, {\"displayName\", \"userPrincipalName\", \"assignedLicenses\"}),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded Column1\",{{\"userPrincipalName\", \"UserId\"}, {\"displayName\", \"User\"}})\nin\n    #\"Renamed Columns\";\r\nshared User = let\n    Source = #\"Users - RAW\",\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"UserId\", \"User\"}),\n    #\"Duplicated Column\" = Table.DuplicateColumn(#\"Removed Other Columns\", \"UserId\", \"UserId - Copy\"),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Duplicated Column\",{{\"UserId - Copy\", \"Tenant\"}}),\n    #\"Extracted Text After Delimiter\" = Table.TransformColumns(#\"Renamed Columns\", {{\"Tenant\", each Text.AfterDelimiter(_, \"@\"), type text}}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Extracted Text After Delimiter\",{{\"UserId\", type text}, {\"User\", type text}, {\"Tenant\", type text}}),\n    #\"Lowercased Text\" = Table.TransformColumns(#\"Changed Type\",{{\"UserId\", Text.Lower, type text}}),\n    #\"Filtered Rows\" = Table.SelectRows(#\"Lowercased Text\", each ([UserId] <> null)),\n    #\"Removed Duplicates\" = Table.Distinct(#\"Filtered Rows\", {\"UserId\"})\nin\n    #\"Removed Duplicates\";\r\nshared #\"User - Licenses\" = let\n    Source = #\"Users - RAW\",\n    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"UserId\", \"assignedLicenses\"}),\n    #\"Expanded assignedLicenses\" = Table.ExpandListColumn(#\"Removed Other Columns\", \"assignedLicenses\"),\n    #\"Expanded assignedLicenses1\" = Table.ExpandRecordColumn(#\"Expanded assignedLicenses\", \"assignedLicenses\", {\"skuId\"}, {\"skuId\"}),\n    #\"Filtered Rows\" = Table.SelectRows(#\"Expanded assignedLicenses1\", each ([skuId] <> null)),\n    #\"Merged Queries\" = Table.NestedJoin(#\"Filtered Rows\", {\"skuId\"}, O365SKUs, {\"SkuId\"}, \"O365SKUs\", JoinKind.LeftOuter),\n    #\"Expanded O365SKUs\" = Table.ExpandTableColumn(#\"Merged Queries\", \"O365SKUs\", {\"SKU\"}, {\"SKU\"}),\n    #\"Changed Type\" = Table.TransformColumnTypes(#\"Expanded O365SKUs\",{{\"UserId\", type text}, {\"skuId\", type text}, {\"SKU\", type text}}),\n    #\"Lowercased Text\" = Table.TransformColumns(#\"Changed Type\",{{\"UserId\", Text.Lower, type text}}),\n    #\"Renamed Columns\" = Table.RenameColumns(#\"Lowercased Text\",{{\"skuId\", \"SKUId\"}, {\"SKU\", \"License\"}}),\n    #\"Filtered Rows1\" = Table.SelectRows(#\"Renamed Columns\", each ([UserId] <> null))\nin\n    #\"Filtered Rows1\";\r\n",
+    "connectionOverrides": []
+  },
+  "annotations": [
+    {
+      "name": "pbi:QueryGroups",
+      "value": "[]"
+    }
+  ],
+  "entities": [
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog-Workspaces LastScan",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog-Workspaces%20LastScan.csv"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "dataType": "string"
+        },
+        {
+          "name": "LastScanJson",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - DataSource",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20DataSource.csv"
+      },
+      "attributes": [
+        {
+          "name": "Filename",
+          "dataType": "string"
+        },
+        {
+          "name": "Date",
+          "dataType": "date"
+        },
+        {
+          "name": "DataSourceId",
+          "dataType": "string"
+        },
+        {
+          "name": "GatewayId",
+          "dataType": "string"
+        },
+        {
+          "name": "DataSource Type",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - URL",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - SharePointSiteUrl",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - Account",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - Domain",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - Server",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - Database",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - Path",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - ConnectionString",
+          "dataType": "string"
+        },
+        {
+          "name": "scanCreatedDateTime",
+          "dataType": "string"
+        },
+        {
+          "name": "Connection - Details",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - DatasetDataSource",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20DatasetDataSource.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "DatasetId",
+          "dataType": "string"
+        },
+        {
+          "name": "DataSourceId",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - Report",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20Report.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "WorkspaceId",
+          "dataType": "string"
+        },
+        {
+          "name": "ReportId",
+          "dataType": "string"
+        },
+        {
+          "name": "Report",
+          "dataType": "string"
+        },
+        {
+          "name": "DatasetId",
+          "dataType": "string"
+        },
+        {
+          "name": "Created On",
+          "dataType": "dateTime"
+        },
+        {
+          "name": "Modified On",
+          "dataType": "dateTime"
+        },
+        {
+          "name": "Modified By",
+          "dataType": "string"
+        },
+        {
+          "name": "AppId",
+          "dataType": "string"
+        },
+        {
+          "name": "Endorsement",
+          "dataType": "string"
+        },
+        {
+          "name": "Certified By",
+          "dataType": "string"
+        },
+        {
+          "name": "Type",
+          "dataType": "string"
+        },
+        {
+          "name": "Sentivity Label",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - Dashboard",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20Dashboard.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "WorkspaceId",
+          "dataType": "string"
+        },
+        {
+          "name": "DashboardId",
+          "dataType": "string"
+        },
+        {
+          "name": "Dashboard",
+          "dataType": "string"
+        },
+        {
+          "name": "Is ReadOnly (Y/N)",
+          "dataType": "boolean"
+        },
+        {
+          "name": "AppId",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - Dataset",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20Dataset.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "WorkspaceId",
+          "dataType": "string"
+        },
+        {
+          "name": "DatasetId",
+          "dataType": "string"
+        },
+        {
+          "name": "Dataset",
+          "dataType": "string"
+        },
+        {
+          "name": "Configured By",
+          "dataType": "string"
+        },
+        {
+          "name": "Target Storage",
+          "dataType": "string"
+        },
+        {
+          "name": "Is EffectiveIdentity Required",
+          "dataType": "boolean"
+        },
+        {
+          "name": "Is EffectiveIdentity Roles Required",
+          "dataType": "boolean"
+        },
+        {
+          "name": "Created On",
+          "dataType": "dateTime"
+        },
+        {
+          "name": "Content Provider Type",
+          "dataType": "string"
+        },
+        {
+          "name": "Description",
+          "dataType": "string"
+        },
+        {
+          "name": "Endorsement",
+          "dataType": "string"
+        },
+        {
+          "name": "Certified By",
+          "dataType": "string"
+        },
+        {
+          "name": "Schema Issues",
+          "dataType": "boolean"
+        },
+        {
+          "name": "Sensitivity Label",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - Workspace",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20Workspace.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "WorkspaceId",
+          "dataType": "string"
+        },
+        {
+          "name": "Workspace",
+          "dataType": "string"
+        },
+        {
+          "name": "Type",
+          "dataType": "string"
+        },
+        {
+          "name": "State",
+          "dataType": "string"
+        },
+        {
+          "name": "Is Dedicated Capacity (Y/N)",
+          "dataType": "boolean"
+        },
+        {
+          "name": "Description",
+          "dataType": "string"
+        },
+        {
+          "name": "CapacityId",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - App",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20App.csv"
+      },
+      "attributes": [
+        {
+          "name": "AppId",
+          "dataType": "string"
+        },
+        {
+          "name": "App",
+          "dataType": "string"
+        },
+        {
+          "name": "Last Updated",
+          "dataType": "dateTime"
+        },
+        {
+          "name": "Description",
+          "dataType": "string"
+        },
+        {
+          "name": "Published By",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - Dataflow",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20Dataflow.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "WorkspaceId",
+          "dataType": "string"
+        },
+        {
+          "name": "DataflowId",
+          "dataType": "string"
+        },
+        {
+          "name": "Dataflow",
+          "dataType": "string"
+        },
+        {
+          "name": "Description",
+          "dataType": "string"
+        },
+        {
+          "name": "Configured By",
+          "dataType": "string"
+        },
+        {
+          "name": "Modified By",
+          "dataType": "string"
+        },
+        {
+          "name": "Modified On",
+          "dataType": "dateTime"
+        },
+        {
+          "name": "Endorsement",
+          "dataType": "string"
+        },
+        {
+          "name": "Certified By",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - DataflowDataSource",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20DataflowDataSource.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "DataflowId",
+          "dataType": "string"
+        },
+        {
+          "name": "DataSourceId",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - Datamart",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20Datamart.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "WorkspaceId",
+          "dataType": "string"
+        },
+        {
+          "name": "Datamart Id",
+          "dataType": "string"
+        },
+        {
+          "name": "Datamart",
+          "dataType": "string"
+        },
+        {
+          "name": "Type",
+          "dataType": "string"
+        },
+        {
+          "name": "Configured By",
+          "dataType": "string"
+        },
+        {
+          "name": "Modified By",
+          "dataType": "string"
+        },
+        {
+          "name": "Modified On",
+          "dataType": "dateTime"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - DatamartDataSource",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20DatamartDataSource.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "Datamart Id",
+          "dataType": "string"
+        },
+        {
+          "name": "DataSourceId",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Catalog - Permission",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Catalog%20-%20Permission.csv"
+      },
+      "annotations": [
+        {
+          "name": "pbi:EntityTypeDisplayHint",
+          "value": "CalculatedEntity"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "WorkspaceId",
+          "dataType": "string"
+        },
+        {
+          "name": "Access Right",
+          "dataType": "string"
+        },
+        {
+          "name": "Identity",
+          "dataType": "string"
+        },
+        {
+          "name": "IdentityId",
+          "dataType": "string"
+        },
+        {
+          "name": "IdentityGraphId",
+          "dataType": "string"
+        },
+        {
+          "name": "Identity Type",
+          "dataType": "string"
+        },
+        {
+          "name": "ObjectId",
+          "dataType": "string"
+        },
+        {
+          "name": "Object Type",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "Activity",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "Activity.csv"
+      },
+      "attributes": [
+        {
+          "name": "FileDate",
+          "dataType": "dateTime"
+        },
+        {
+          "name": "Operation",
+          "dataType": "string"
+        },
+        {
+          "name": "UserId",
+          "dataType": "string"
+        },
+        {
+          "name": "ClientIP",
+          "dataType": "string"
+        },
+        {
+          "name": "UserAgent",
+          "dataType": "string"
+        },
+        {
+          "name": "Item Name",
+          "dataType": "string"
+        },
+        {
+          "name": "Workspace",
+          "dataType": "string"
+        },
+        {
+          "name": "Dataset",
+          "dataType": "string"
+        },
+        {
+          "name": "Report",
+          "dataType": "string"
+        },
+        {
+          "name": "WorkspaceId",
+          "dataType": "string"
+        },
+        {
+          "name": "DatasetId",
+          "dataType": "string"
+        },
+        {
+          "name": "ReportId",
+          "dataType": "string"
+        },
+        {
+          "name": "Report Type",
+          "dataType": "string"
+        },
+        {
+          "name": "Distribution Method",
+          "dataType": "string"
+        },
+        {
+          "name": "App",
+          "dataType": "string"
+        },
+        {
+          "name": "Dashboard",
+          "dataType": "string"
+        },
+        {
+          "name": "DashboardId",
+          "dataType": "string"
+        },
+        {
+          "name": "Sharing Action",
+          "dataType": "string"
+        },
+        {
+          "name": "CapacityId",
+          "dataType": "string"
+        },
+        {
+          "name": "Capacity",
+          "dataType": "string"
+        },
+        {
+          "name": "Dataflow",
+          "dataType": "string"
+        },
+        {
+          "name": "Creation Time",
+          "dataType": "dateTime"
+        },
+        {
+          "name": "TimeId",
+          "dataType": "int64"
+        },
+        {
+          "name": "Date",
+          "dataType": "date"
+        },
+        {
+          "name": "Operative System",
+          "dataType": "string"
+        },
+        {
+          "name": "Workspace Type",
+          "dataType": "string"
+        },
+        {
+          "name": "User Tenant",
+          "dataType": "string"
+        },
+        {
+          "name": "Consumption Method (Original)",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "User",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "User.csv"
+      },
+      "attributes": [
+        {
+          "name": "UserId",
+          "dataType": "string"
+        },
+        {
+          "name": "User",
+          "dataType": "string"
+        },
+        {
+          "name": "Tenant",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    },
+    {
+      "$type": "LocalEntity",
+      "name": "User - Licenses",
+      "description": "",
+      "pbi:refreshPolicy": {
+        "$type": "FullRefreshPolicy",
+        "location": "User%20-%20Licenses.csv"
+      },
+      "attributes": [
+        {
+          "name": "UserId",
+          "dataType": "string"
+        },
+        {
+          "name": "SKUId",
+          "dataType": "string"
+        },
+        {
+          "name": "License",
+          "dataType": "string"
+        }
+      ],
+      "partitions": []
+    }
+  ]
+}
