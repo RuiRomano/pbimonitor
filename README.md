@@ -26,11 +26,12 @@ On Azure Active Directory:
 2. Generate a new "Client Secret" on "Certificates & secrets" and save the Secret text
 3. Save the App Id & Tenant Id on the overview page of the service principal
 4. Create a new Security Group on Azure Active Directory and add the Service Principal above as member
-5. Optionally add the following API's on "API Permissions" and Administrator grant to get the license & user info data:
+5. Optionally add the following API Application level permissions on "Microsoft Graph" API with Administrator grant to get the license & user info data:
     - User.Read.All
     - Directory.Read.All
 
         ![image](https://user-images.githubusercontent.com/10808715/142396742-2d0b6de9-95ef-4b2a-8ca9-23c9f1527fa9.png)
+        ![image](./Images/SP_APIPermission_Directory.png)
         <img width="762" alt="image" src="https://user-images.githubusercontent.com/10808715/169350157-a9ccb47d-2c65-4b1a-80a1-757b9b02536d.png">
 
 
