@@ -108,7 +108,7 @@ try {
 
                 New-Item -Path (Split-Path $outputFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
     
-                ConvertTo-Json @($audits) -Compress -Depth 5 | Out-File $outputFilePath -force
+                ConvertTo-Json @($audits) -Compress -Depth 10 | Out-File $outputFilePath -force
 
                 if ($config.StorageAccountConnStr -and (Test-Path $outputFilePath)) {
                     Write-Host "Writing to Blob Storage"
