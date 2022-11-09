@@ -27,7 +27,7 @@ if (Test-Path $configFilePath) {
         $config | Add-Member -NotePropertyName "OutputPath" -NotePropertyValue ".\\Data" -Force
     }
 
-    if (!$config.ServicePrincipal.Environment) {
+    if ($config.ServicePrincipal -and !$config.ServicePrincipal.Environment) {
         $config.ServicePrincipal | Add-Member -NotePropertyName "Environment" -NotePropertyValue "Public" -Force           
     }
 }

@@ -9,8 +9,7 @@ param(
 $ErrorActionPreference = "Stop"
 $VerbosePreference = "SilentlyContinue"
 
-try
-{
+try {
     Write-Host "Starting Power BI Dataset Refresh History Fetch"
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
@@ -28,10 +27,15 @@ try
     New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
 
     Write-Host "Getting OAuth Token"
+    
+    if ($config.ServicePrincipal.AppId) {
+        $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
-    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
-
-    $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+        $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+    }
+    else {
+        $pbiAccount = Connect-PowerBIServiceAccount
+    }
 
     Write-Host "Login with: $($pbiAccount.UserName)"
     
@@ -48,14 +52,12 @@ try
 
     $workspacesFilePath = "$tempPath\workspaces.datasets.json"    
 
-    if (!(Test-Path $workspacesFilePath))
-    {        
+    if (!(Test-Path $workspacesFilePath)) {        
         $workspaces = Get-PowerBIWorkspace -Scope Organization -All -Include Datasets
              
         $workspaces | ConvertTo-Json -Depth 5 -Compress | Out-File $workspacesFilePath        
     }
-    else
-    {
+    else {
         Write-Host "Workspaces file already exists"
 
         $workspaces = Get-Content -Path $workspacesFilePath | ConvertFrom-Json
@@ -63,17 +65,16 @@ try
 
     Write-Host "Workspaces: $($workspaces.Count)"
 
-    $workspaces = $workspaces |? { $_.users |? { $_.identifier -ieq $pbiUserIdentifier } }
+    $workspaces = $workspaces | ? { $_.users | ? { $_.identifier -ieq $pbiUserIdentifier } }
 
     Write-Host "Workspaces where user is a member: $($workspaces.Count)"
 
     # Only look at Active, V2 Workspaces and with Datasets
 
-    $workspaces = @($workspaces |? {$_.type -eq "Workspace" -and $_.state -eq "Active" -and $_.datasets.Count -gt 0})
+    $workspaces = @($workspaces | ? { $_.type -eq "Workspace" -and $_.state -eq "Active" -and $_.datasets.Count -gt 0 })
 
-    if ($workspaceFilter -and $workspaceFilter.Count -gt 0)
-    {
-        $workspaces = @($workspaces |? { $workspaceFilter -contains $_.Id})
+    if ($workspaceFilter -and $workspaceFilter.Count -gt 0) {
+        $workspaces = @($workspaces | ? { $workspaceFilter -contains $_.Id })
     }
 
     Write-Host "Workspaces to get refresh history: $($workspaces.Count)"
@@ -81,22 +82,19 @@ try
     $total = $Workspaces.Count
     $item = 0
 
-    foreach($workspace in $Workspaces)
-    {          
+    foreach ($workspace in $Workspaces) {          
         $item++
                    
         Write-Host "Processing workspace: '$($workspace.Name)' $item/$total" 
 
         Write-Host "Datasets: $(@($workspace.datasets).Count)"
 
-        $refreshableDatasets = @($workspace.datasets |? { $_.isRefreshable -eq $true -and $_.addRowsAPIEnabled -eq $false})
+        $refreshableDatasets = @($workspace.datasets | ? { $_.isRefreshable -eq $true -and $_.addRowsAPIEnabled -eq $false })
 
         Write-Host "Refreshable Datasets: $($refreshableDatasets.Count)"
 
-        foreach($dataset in $refreshableDatasets)
-        {
-            try
-            {
+        foreach ($dataset in $refreshableDatasets) {
+            try {
                 Write-Host "Processing dataset: '$($dataset.name)'" 
 
                 Write-Host "Getting refresh history"
@@ -105,24 +103,21 @@ try
 
                 $dsRefreshHistory = $dsRefreshHistory.value               
 
-                if ($dsRefreshHistory)
-                {              
-                    $dsRefreshHistory = @($dsRefreshHistory | Select *, @{Name="dataSetId"; Expression={ $dataset.id }}, @{Name="dataSet"; Expression={ $dataset.name }}`
-                        , @{Name="group"; Expression={ $workspace.name }}, @{Name="configuredBy"; Expression={ $dataset.configuredBy }})
+                if ($dsRefreshHistory) {              
+                    $dsRefreshHistory = @($dsRefreshHistory | Select *, @{Name = "dataSetId"; Expression = { $dataset.id } }, @{Name = "dataSet"; Expression = { $dataset.name } }`
+                            , @{Name = "group"; Expression = { $workspace.name } }, @{Name = "configuredBy"; Expression = { $dataset.configuredBy } })
 
                     $dsRefreshHistoryGlobal += $dsRefreshHistory
                 }
             }
-            catch
-            {
+            catch {
                 $ex = $_.Exception
 
                 Write-Error -message "Error processing dataset: '$($ex.Message)'" -ErrorAction Continue
 
                 # If its unauthorized no need to advance to other datasets in this workspace
 
-                if ($ex.Message.Contains("Unauthorized") -or $ex.Message.Contains("(404) Not Found"))
-                {
+                if ($ex.Message.Contains("Unauthorized") -or $ex.Message.Contains("(404) Not Found")) {
                     Write-Host "Got unauthorized/notfound, skipping workspace"
                 
                     break
@@ -132,8 +127,7 @@ try
         }
     }
     
-    if ($dsRefreshHistoryGlobal.Count -gt 0)
-    {        
+    if ($dsRefreshHistoryGlobal.Count -gt 0) {        
         $outputFilePath = "$outputPath\workspaces.datasets.refreshes.json"
 
         ConvertTo-Json @($dsRefreshHistoryGlobal) -Compress -Depth 5 | Out-File $outputFilePath -force
@@ -150,8 +144,7 @@ try
         }
     }
 }
-finally
-{
+finally {
     $stopwatch.Stop()
 
     Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"

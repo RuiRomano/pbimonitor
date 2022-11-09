@@ -8,8 +8,7 @@ param(
     [string]$stateFilePath
 )
 
-try
-{
+try {
     Write-Host "Starting Power BI Catalog Fetch"
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
@@ -17,8 +16,7 @@ try
 
     $outputPath = "$($config.OutputPath)\catalog"    
     
-    if (!$stateFilePath)
-    {
+    if (!$stateFilePath) {
         $stateFilePath = "$($config.OutputPath)\state.json"
     }    
 
@@ -32,7 +30,7 @@ try
     }
     else {
         $state = New-Object psobject 
-        $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null; "LastFullScan" = $null} -Force
+        $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null; "LastFullScan" = $null } -Force
     }
     
     $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
@@ -47,9 +45,14 @@ try
 
     Write-Host "Getting OAuth Token"
 
-    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+    if ($config.ServicePrincipal.AppId) {
+        $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
-    $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+        $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
+    }
+    else {
+        $pbiAccount = Connect-PowerBIServiceAccount
+    }
 
     Write-Host "Login with: $($pbiAccount.UserName)"
 
@@ -60,24 +63,21 @@ try
     $filePath = "$snapshotOutputPath\apps.json"
     $snapshotFiles += $filePath    
 
-    if (!(Test-Path $filePath))
-    {     
+    if (!(Test-Path $filePath)) {     
         Write-Host "Getting Power BI Apps List"
         
         $result = Invoke-PowerBIRestMethod -Url "admin/apps?`$top=5000&`$skip=0 " -Method Get | ConvertFrom-Json
 
         $result = @($result.value)
 
-        if ($result.Count -ne 0)
-        {
+        if ($result.Count -ne 0) {
             ConvertTo-Json $result -Depth 10 -Compress | Out-File $filePath -force
         }
         else {
             Write-Host "Tenant without PowerBI apps"
         }
     }
-    else
-    {
+    else {
         Write-Host "'$filePath' already exists"
     }    
 
@@ -89,10 +89,8 @@ try
 
         $storageRootPath = "$($config.StorageAccountContainerRootPath)/catalog"
 
-        foreach ($outputFilePath in $snapshotFiles)
-        {            
-            if (Test-Path $outputFilePath)
-            {
+        foreach ($outputFilePath in $snapshotFiles) {            
+            if (Test-Path $outputFilePath) {
                 Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath     
 
                 Remove-Item $outputFilePath -Force
@@ -111,40 +109,32 @@ try
 
     $getInfoDetails = "lineage=true&datasourceDetails=true&getArtifactUsers=true&datasetSchema=false&datasetExpressions=false"
 
-    if ($config.CatalogGetInfoParameters)
-    {
+    if ($config.CatalogGetInfoParameters) {
         $getInfoDetails = $config.CatalogGetInfoParameters
     }    
 
     $getModifiedWorkspacesParams = "excludePersonalWorkspaces=false&excludeInActiveWorkspaces=true"
     
-    if ($config.CatalogGetModifiedParameters)
-    {
+    if ($config.CatalogGetModifiedParameters) {
         $getModifiedWorkspacesParams = $config.CatalogGetModifiedParameters
     }
 
     $fullScan = $false
 
-    if ($state.Catalog.LastRun -and !$reset)
-    {        
-        if (!($state.Catalog.LastRun -is [datetime]))
-        {
+    if ($state.Catalog.LastRun -and !$reset) {        
+        if (!($state.Catalog.LastRun -is [datetime])) {
             $state.Catalog.LastRun = [datetime]::Parse($state.Catalog.LastRun).ToUniversalTime()
         }
     
-        if ($config.FullScanAfterDays)
-        {
-            if ($state.Catalog.LastFullScan)
-            {
-                if (!($state.Catalog.LastFullScan -is [datetime]))
-                {
+        if ($config.FullScanAfterDays) {
+            if ($state.Catalog.LastFullScan) {
+                if (!($state.Catalog.LastFullScan -is [datetime])) {
                     $state.Catalog.LastFullScan = [datetime]::Parse($state.Catalog.LastFullScan).ToUniversalTime()
                 }
                 
                 $daysSinceLastFullScan = ($state.Catalog.LastRun - $state.Catalog.LastFullScan).TotalDays            
 
-                if ($daysSinceLastFullScan -ge $config.FullScanAfterDays)
-                {                
+                if ($daysSinceLastFullScan -ge $config.FullScanAfterDays) {                
                     Write-Host "Triggering FullScan after $daysSinceLastFullScan days"
                     $fullScan = $true
                 }
@@ -152,21 +142,18 @@ try
                     Write-Host "Days to next fullscan: $($config.FullScanAfterDays - $daysSinceLastFullScan)"
                 }
             }
-            else
-            {
+            else {
                 Write-Host "Triggering FullScan, because FullScanAfterDays is configured and LastFullScan is empty"
                 $fullScan = $true
             }
         }        
         
-        if (!$fullScan)
-        {        
+        if (!$fullScan) {        
             $modifiedSinceDate = $state.Catalog.LastRun
 
             $modifiedSinceDateMinDate = [datetime]::UtcNow.Date.AddDays(-30)
 
-            if ($modifiedSinceDate -le $modifiedSinceDateMinDate)
-            {
+            if ($modifiedSinceDate -le $modifiedSinceDateMinDate) {
                 Write-Host "Last Run date was '$($modifiedSinceDate.ToString("o"))' but cannot go longer than 30 days"
 
                 $modifiedSinceDate = $modifiedSinceDateMinDate
@@ -194,8 +181,7 @@ try
     
     $workspacesModified = Invoke-PowerBIRestMethod -Url $modifiedRequestUrl -Method Get | ConvertFrom-Json
 
-    if (!$workspacesModified -or $workspacesModified.Count -eq 0)
-    {
+    if (!$workspacesModified -or $workspacesModified.Count -eq 0) {
         Write-Host "No workspaces modified"
     }
     else {
@@ -233,14 +219,12 @@ try
 
             # Wait for Scan to execute - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanstatus (10,000 requests per hour)
         
-            while(@($workspacesScanRequests |? status -in @("Running", "NotStarted")))
-            {
+            while (@($workspacesScanRequests | ? status -in @("Running", "NotStarted"))) {
                 Write-Host "Waiting for scan results, sleeping for $scanStatusSleepSeconds seconds..."
         
                 Start-Sleep -Seconds $scanStatusSleepSeconds
         
-                foreach ($workspaceScanRequest in $workspacesScanRequests)
-                {            
+                foreach ($workspaceScanRequest in $workspacesScanRequests) {            
                     $scanStatus = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanStatus/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
         
                     Write-Host "Scan '$($scanStatus.id)' : '$($scanStatus.status)'"
@@ -251,8 +235,7 @@ try
         
             # Get Scan results (500 requests per hour) - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanresult    
         
-            foreach ($workspaceScanRequest in $workspacesScanRequests)
-            {   
+            foreach ($workspaceScanRequest in $workspacesScanRequests) {   
                 Wait-On429Error -tentatives 1 -sleepSeconds $throttleErrorSleepSeconds -script {
 
                     $scanResult = Invoke-PowerBIRestMethod -Url "admin/workspaces/scanResult/$($workspaceScanRequest.id)" -method Get | ConvertFrom-Json
@@ -261,8 +244,7 @@ try
             
                     $fullScanSuffix = ""
 
-                    if ($fullScan)
-                    {              
+                    if ($fullScan) {              
                         $fullScanSuffix = ".fullscan"      
                     }
                     
@@ -301,15 +283,13 @@ try
 
     $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
     
-    if ($fullScan)
-    {        
-        $state.Catalog.LastFullScan  = [datetime]::UtcNow.Date.ToString("o")     
+    if ($fullScan) {        
+        $state.Catalog.LastFullScan = [datetime]::UtcNow.Date.ToString("o")     
     }
 
     ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
 }
-finally
-{
+finally {
     $stopwatch.Stop()
 
     Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
