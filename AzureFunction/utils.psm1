@@ -43,13 +43,27 @@ function Get-PBIMonitorConfig {
         $stgAccountConnStr = $env:AzureWebJobsStorage
     }   
 
+    $containerName = $env:PBIMONITOR_StorageContainerName
+
+    if (!$containerName)
+    {
+        $containerName = "pbimonitor"
+    }
+
+    $containerRootPath = $env:PBIMONITOR_StorageRootPath
+
+    if (!$containerRootPath)
+    {
+        $containerRootPath = "raw"
+    }
+
     $config = @{
         "AppDataPath" = $appDataPath;
         "ScriptsPath" = $scriptsPath;
         "OutputPath" = $outputPath;
         "StorageAccountConnStr" = $stgAccountConnStr;
-        "StorageAccountContainerName" = $env:PBIMONITOR_StorageContainerName;
-        "StorageAccountContainerRootPath" = $env:PBIMONITOR_StorageRootPath;
+        "StorageAccountContainerName" = $containerName;
+        "StorageAccountContainerRootPath" = $containerRootPath;
         "ActivityFileBatchSize" = $env:PBIMONITOR_ActivityFileBatchSize;
         "FullScanAfterDays" = $env:PBIMONITOR_FullScanAfterDays;
         "CatalogGetInfoParameters" = $env:PBIMONITOR_CatalogGetInfoParameters;
