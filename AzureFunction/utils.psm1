@@ -68,6 +68,7 @@ function Get-PBIMonitorConfig {
         "FullScanAfterDays" = $env:PBIMONITOR_FullScanAfterDays;
         "CatalogGetInfoParameters" = $env:PBIMONITOR_CatalogGetInfoParameters;
         "CatalogGetModifiedParameters" = $env:PBIMONITOR_CatalogGetModifiedParameters;
+        "GraphPaginateCount" = $env:PBIMONITOR_GraphPaginateCount;
         "ServicePrincipal" = @{
             "AppId" = $env:PBIMONITOR_ServicePrincipalId;
             "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;

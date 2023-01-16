@@ -145,6 +145,8 @@ function Get-ArrayInBatches
     )
 
     $skip = 0
+    
+    $i = 0
 
     do
     {   
@@ -154,10 +156,12 @@ function Get-ArrayInBatches
         {
             Write-Host "[$label] Batch: $($skip + $batchCount) / $($array.Count)"
             
-            Invoke-Command -ScriptBlock $script -ArgumentList @(,$batchItems)
+            Invoke-Command -ScriptBlock $script -ArgumentList @($batchItems, $i)
 
             $skip += $batchCount
-        }       
+        }
+        
+        $i++
         
     }
     while($batchItems.Count -ne 0 -and $batchItems.Count -ge $batchCount)   
