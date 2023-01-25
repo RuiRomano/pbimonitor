@@ -187,8 +187,11 @@ function Wait-On429Error
     catch {
 
         $ex = $_.Exception
+        
+        $errorText = $ex.ToString()
 
-        if ($ex.ToString().Contains("429 (Too Many Requests)")) {
+        if ($errorText.Contains("429 (Too Many Requests)") -or $errorText.Contains("Response status code does not indicate success: 429")) {
+
             Write-Host "'429 (Too Many Requests)' Error - Sleeping for $sleepSeconds seconds before trying again" -ForegroundColor Yellow
 
             $tentatives = $tentatives - 1
