@@ -190,7 +190,7 @@ function Wait-On429Error
         
         $errorText = $ex.ToString()
 
-        if ($errorText.Contains("429 (Too Many Requests)") -or $errorText.Contains("Response status code does not indicate success: 429")) {
+        if ($errorText -like "*HttpRequestException*" -and ($errorText -like "*429 (Too Many Requests)*" -or $errorText -like "*Response status code does not indicate success: 429*")) {
 
             Write-Host "'429 (Too Many Requests)' Error - Sleeping for $sleepSeconds seconds before trying again" -ForegroundColor Yellow
 
