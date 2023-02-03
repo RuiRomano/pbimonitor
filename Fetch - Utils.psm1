@@ -145,6 +145,8 @@ function Get-ArrayInBatches
     )
 
     $skip = 0
+    
+    $i = 0
 
     do
     {   
@@ -154,10 +156,12 @@ function Get-ArrayInBatches
         {
             Write-Host "[$label] Batch: $($skip + $batchCount) / $($array.Count)"
             
-            Invoke-Command -ScriptBlock $script -ArgumentList @(,$batchItems)
+            Invoke-Command -ScriptBlock $script -ArgumentList @($batchItems, $i)
 
             $skip += $batchCount
-        }       
+        }
+        
+        $i++
         
     }
     while($batchItems.Count -ne 0 -and $batchItems.Count -ge $batchCount)   
@@ -183,8 +187,11 @@ function Wait-On429Error
     catch {
 
         $ex = $_.Exception
+        
+        $errorText = $ex.ToString()
 
-        if ($ex.ToString().Contains("429 (Too Many Requests)")) {
+        if ($errorText -like "*HttpRequestException*" -and ($errorText -like "*429 (Too Many Requests)*" -or $errorText -like "*Response status code does not indicate success: 429*")) {
+
             Write-Host "'429 (Too Many Requests)' Error - Sleeping for $sleepSeconds seconds before trying again" -ForegroundColor Yellow
 
             $tentatives = $tentatives - 1

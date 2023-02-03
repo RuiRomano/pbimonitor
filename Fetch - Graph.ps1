@@ -1,5 +1,5 @@
 param(        
-    [psobject]$config    
+    [psobject]$config
 )
 
 #region Graph API Helper Functions
@@ -152,6 +152,15 @@ try {
         }
     )
 
+    $paginateCount = 10000  
+
+    if ($config.GraphPaginateCount)
+    {
+        $paginateCount = $config.GraphPaginateCount
+    }
+
+    Write-Host "GraphPaginateCount: $paginateCount"
+
     foreach ($graphCall in $graphCalls)
     {
         Write-Host "Getting OAuth token"
@@ -162,28 +171,39 @@ try {
 
         $data = Read-FromGraphAPI -accessToken $authToken -url $graphCall.GraphUrl | select * -ExcludeProperty "@odata.id"
 
-        Write-Host "Writing to file: '$($graphCall.FilePath)'"
+        $filePath = $graphCall.FilePath
 
-        ConvertTo-Json @($data) -Compress -Depth 5 | Out-File $graphCall.FilePath -Force
-
-        if ($config.StorageAccountConnStr) {
-
-            Write-Host "Writing to Blob Storage"
-        
-            $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
-    
-            $outputFilePath = $graphCall.FilePath
-     
-            if (Test-Path $outputFilePath)
+        Get-ArrayInBatches -array $data -label "Read-FromGraphAPI Local Batch" -batchCount $paginateCount -script {
+            param($dataBatch, $i)
+            
+            if ($i)
             {
-                Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath    
+                $filePath = "$([System.IO.Path]::GetDirectoryName($filePath))\$([System.IO.Path]::GetFileNameWithoutExtension($filePath))_$i$([System.IO.Path]::GetExtension($filePath))"
+            }
 
-                Remove-Item $outputFilePath -Force
-            }
-            else {
-                Write-Host "Cannot find file '$outputFilePath'"
-            }
-        }
+            Write-Host "Writing to file: '$filePath'"
+
+            ConvertTo-Json @($dataBatch) -Compress -Depth 5 | Out-File $filePath -Force
+    
+            if ($config.StorageAccountConnStr) {
+    
+                Write-Host "Writing to Blob Storage"
+            
+                $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
+        
+                $outputFilePath = $filePath
+         
+                if (Test-Path $outputFilePath)
+                {
+                    Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath    
+    
+                    Remove-Item $outputFilePath -Force
+                }
+                else {
+                    Write-Host "Cannot find file '$outputFilePath'"
+                }
+            }        
+        }        
     }
 
 }

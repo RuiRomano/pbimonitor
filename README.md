@@ -181,6 +181,16 @@ The function should be ready to run, go to the function page and open the “Aud
 ![image](https://user-images.githubusercontent.com/10808715/138612898-51613dfb-50b5-426d-9ee1-b8314f901b74.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612903-4e74625a-1fdc-4197-8034-621040b6b484.png)
 
+### Change Azure Function Time Trigger
+
+Its possible to change the time of the trigger by changing the 'function.json' file for each timer using App Service Editor:
+
+![image](./Images/AzureFunction_TimerChange_AppService.png)
+
+Or editing the timer integration:
+
+![image](./Images/AzureFunction_TimerChange_Timer.png)
+
 ## Force a Full Scan
 
 On large tenants you may run into memory issues reading all the data from a Power BI Dataset.

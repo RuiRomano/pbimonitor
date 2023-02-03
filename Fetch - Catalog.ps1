@@ -196,13 +196,13 @@ try {
         # postworkspaceinfo only allows 16 parallel requests, Get-ArrayInBatches allows to create a two level batch strategy. It should support initial load without throttling on tenants with ~50000 workspaces
 
         Get-ArrayInBatches -array $workspacesModified -label "GetInfo Global Batch" -batchCount $getInfoOuterBatchCount -script {
-            param($workspacesModifiedOuterBatch)
+            param($workspacesModifiedOuterBatch, $i)
                                             
             $script:workspacesScanRequests = @()
 
             # Call GetInfo in batches of 100 (MAX 500 requests per hour)
             Get-ArrayInBatches -array $workspacesModifiedOuterBatch -label "GetInfo Local Batch" -batchCount $getInfoInnerBatchCount -script {
-                param($workspacesBatch)
+                param($workspacesBatch, $x)
                 
                 Wait-On429Error -tentatives 1 -sleepSeconds $throttleErrorSleepSeconds -script {
                     
