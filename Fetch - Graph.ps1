@@ -149,8 +149,17 @@ try {
         @{
             GraphUrl = "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits,prepaidUnits,skuid,skupartnumber,prepaidUnits";
             FilePath = "$outputPath\subscribedskus.json"
-        }
+        }    
     )
+
+    if ($config.GraphExtractGroups)
+    {
+        $graphCalls += @{
+            #GraphUrl = "$graphUrl/groups?`$expand=members(`$select=id,displayName,appId,userPrincipalName)&`$select=id,displayName";
+            GraphUrl = "$graphUrl/groups?`$select=id,displayName";
+            FilePath = "$outputPath\groups.json"
+        }
+    }
 
     $paginateCount = 10000  
 
@@ -159,7 +168,7 @@ try {
         $paginateCount = $config.GraphPaginateCount
     }
 
-    Write-Host "GraphPaginateCount: $paginateCount"
+    Write-Host "GraphPaginateCount: $paginateCount"   
 
     foreach ($graphCall in $graphCalls)
     {
@@ -179,6 +188,22 @@ try {
             if ($i)
             {
                 $filePath = "$([System.IO.Path]::GetDirectoryName($filePath))\$([System.IO.Path]::GetFileNameWithoutExtension($filePath))_$i$([System.IO.Path]::GetExtension($filePath))"
+            }
+
+            if ($graphCall.GraphUrl -like "$graphUrl/groups*")
+            {
+                #$groupsWithMoreThan20Members = $dataBatch |? { $_.members.Count -ge 20 }
+            
+                #Write-Host "Groups with more than 20 members: $($groupsWithMoreThan20Members.Count)"
+                
+                #foreach($group in $groupsWithMoreThan20Members)
+                foreach($group in $dataBatch)
+                {        
+                    $groupMembers = @(Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/groups/$($group.id)/transitiveMembers?`$select=id,displayName,appId,userPrincipalName")
+        
+                    #$group.members = $groupMembers    
+                    $group | Add-Member -NotePropertyName "members" -NotePropertyValue $groupMembers -ErrorAction SilentlyContinue   
+                }
             }
 
             Write-Host "Writing to file: '$filePath'"
