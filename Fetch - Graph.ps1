@@ -156,7 +156,7 @@ try {
     {
         $graphCalls += @{
             #GraphUrl = "$graphUrl/groups?`$expand=members(`$select=id,displayName,appId,userPrincipalName)&`$select=id,displayName";
-            GraphUrl = "$graphUrl/groups?`$select=id,displayName";
+            GraphUrl = "$graphUrl/groups?`$filter=securityEnabled eq true&`$select=id,displayName";
             FilePath = "$outputPath\groups.json"
         }
     }
@@ -197,6 +197,9 @@ try {
                 #Write-Host "Groups with more than 20 members: $($groupsWithMoreThan20Members.Count)"
                 
                 #foreach($group in $groupsWithMoreThan20Members)
+
+                Write-Host "Looping group batch to get members"
+
                 foreach($group in $dataBatch)
                 {        
                     $groupMembers = @(Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/groups/$($group.id)/transitiveMembers?`$select=id,displayName,appId,userPrincipalName")
