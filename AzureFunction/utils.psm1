@@ -69,6 +69,7 @@ function Get-PBIMonitorConfig {
         "CatalogGetInfoParameters" = $env:PBIMONITOR_CatalogGetInfoParameters;
         "CatalogGetModifiedParameters" = $env:PBIMONITOR_CatalogGetModifiedParameters;
         "GraphPaginateCount" = $env:PBIMONITOR_GraphPaginateCount;
+        "GraphExtractGroups" = $env:PBIMONITOR_GraphExtractGroups;
         "ServicePrincipal" = @{
             "AppId" = $env:PBIMONITOR_ServicePrincipalId;
             "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;

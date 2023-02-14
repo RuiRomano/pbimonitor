@@ -129,7 +129,7 @@ Go back to the Azure Function page and click on "Configuration", and manually ad
 | PBIMONITOR_FullScanAfterDays   | 30       | Number of Days to repeat a full scan - Optimization to avoid reading too many scanner files on the Power BI Dataset
 | PBIMONITOR_CatalogGetModifiedParameters   |        | Optional, default: 'excludePersonalWorkspaces=false&excludeInActiveWorkspaces=true'
 | PBIMONITOR_CatalogGetInfoParameters   |        | Optional, default: 'lineage=true&datasourceDetails=true&getArtifactUsers=true&datasetSchema=false&datasetExpressions=false'
-
+| PBIMONITOR_GraphExtractGroups   | false       | Optional, if 'true' it will extract the members of the security groups to expand artifact permissions.
 
 ![image](https://user-images.githubusercontent.com/10808715/138612882-2b3c462b-5d0d-4606-b818-064819fcb7b9.png)
 ![image](https://user-images.githubusercontent.com/10808715/138612888-80438da3-5bb1-4c75-97f7-425cb804a03f.png)
