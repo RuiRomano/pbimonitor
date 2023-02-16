@@ -154,6 +154,7 @@ try {
 
     if ($config.GraphExtractGroups)
     {
+        Write-Host "Adding graph call to extract groups"
         $graphCalls += @{
             #GraphUrl = "$graphUrl/groups?`$expand=members(`$select=id,displayName,appId,userPrincipalName)&`$select=id,displayName";
             GraphUrl = "$graphUrl/groups?`$filter=securityEnabled eq true&`$select=id,displayName";

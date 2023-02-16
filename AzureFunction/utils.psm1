@@ -57,6 +57,13 @@ function Get-PBIMonitorConfig {
         $containerRootPath = "raw"
     }
 
+    $flagExtractGroups = $false
+
+    if($env:PBIMONITOR_GraphExtractGroups)
+    {
+        $flagExtractGroups = [System.Convert]::ToBoolean($env:PBIMONITOR_GraphExtractGroups)
+    }
+
     $config = @{
         "AppDataPath" = $appDataPath;
         "ScriptsPath" = $scriptsPath;
@@ -69,7 +76,7 @@ function Get-PBIMonitorConfig {
         "CatalogGetInfoParameters" = $env:PBIMONITOR_CatalogGetInfoParameters;
         "CatalogGetModifiedParameters" = $env:PBIMONITOR_CatalogGetModifiedParameters;
         "GraphPaginateCount" = $env:PBIMONITOR_GraphPaginateCount;
-        "GraphExtractGroups" = $env:PBIMONITOR_GraphExtractGroups;
+        "GraphExtractGroups" = $flagExtractGroups;
         "ServicePrincipal" = @{
             "AppId" = $env:PBIMONITOR_ServicePrincipalId;
             "AppSecret" = $env:PBIMONITOR_ServicePrincipalSecret;

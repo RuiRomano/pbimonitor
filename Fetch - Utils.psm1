@@ -79,7 +79,7 @@ function Add-FileToBlobStorage {
     }
     
     if ($ensureContainer) {
-        Write-Host "Ensuring container '$storageContainerName'"
+        #Write-Host "Ensuring container '$storageContainerName'"
         
         New-AzStorageContainer -Context $ctx -Name $storageContainerName -Permission Off -ErrorAction SilentlyContinue | Out-Null
     }
