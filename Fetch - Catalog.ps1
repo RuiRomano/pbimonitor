@@ -30,10 +30,11 @@ try {
     }
     else {
         $state = New-Object psobject 
+        
         $state | Add-Member -NotePropertyName "Catalog" -NotePropertyValue @{"LastRun" = $null; "LastFullScan" = $null } -Force
+
+        $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
     }
-    
-    $state.Catalog.LastRun = [datetime]::UtcNow.Date.ToString("o")
 
     # ensure folders
     
