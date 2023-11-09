@@ -62,6 +62,7 @@ As a Power BI Administrator go to the Power BI Tenant Settings and authorize the
 # Setup - As an Azure Function
 
 ![image](https://user-images.githubusercontent.com/10808715/138757904-8be24316-d971-4b16-a31b-18b840e88d48.png)
+*Fabric  API used for Tenant settings but does not require any other permissions for your Service Principal
 
 On an Azure Subscription create a resource group:
 
@@ -108,6 +109,7 @@ Open the Azure Function page, go to "Advanced Tools" and click "Go ➔" This wil
 Go to "Tools" -> "Zip Push Deploy" and drag & drop the file [AzureFunction.zip](./AzureFunction.zip):
 
 ![image](https://user-images.githubusercontent.com/10808715/138612860-6c849c90-8c56-4c0d-b914-22cf8a6ba57a.png)
+<br>
 ![image](https://user-images.githubusercontent.com/10808715/138612867-a3fbe8f9-bae0-412c-936b-f893da3c8c46.png)
 
 Confirm if the deploy was successful:
@@ -177,7 +179,8 @@ The Azure Function has 4 time trigger functions enabled by default:
 | AuditsTimer      | Everyday at 2AM       | Fetches activity data from the Actitivy API
 | CatalogTimer   | Everyday at 1AM    | Fetches metadata from the tenant: workspaces, datasets, reports,data sources
 | DatasetRefreshTimer      | Everyday at 5AM  | Fetches the refresh history of all datasets in workspaces where the service principal is a Member
-| GraphTimer  | Everyday at 4AM        | Fetches the User & License information from Graph API
+| GraphTimer  | Everyday at 4AM        | Fetches the User & License information from Graph API |
+| TenantSettingsTimer| Everyday at 4am | Fetches Tenant Setting data from Fabric API |
 
 The function should be ready to run, go to the function page and open the “AuditsTimer” and Run it:
 
