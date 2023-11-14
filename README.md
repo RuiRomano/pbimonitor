@@ -20,6 +20,9 @@ You can deploy the powershell scripts in two ways:
 
 ## Create a Service Principal & Security Group
 
+> [!NOTE]  
+> Azure Active Directory is now call Entra ID.
+
 On Azure Active Directory:
 
 1. Go to "App Registrations" select "New App" and leave the default options
@@ -84,7 +87,10 @@ Basics
 
 Hosting
 - Storage Account - Create a new storage account to hold the data collected from the Azure Function
-- Plan Type - Consumption, on a large Power BI tenant a dedicated plan might be needed because on consumption the functions have a 10 minute timeout. Learn more about timeouts [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale#timeout) and how to extend the timeout configuration host.json [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-host-json).
+- Plan Type - Consumption
+
+> [!NOTE]  
+> On a large Power BI tenant a dedicated plan might be needed because on consumption the functions have a 10 minute timeout. Learn more about timeouts [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale#timeout) and how to extend the timeout configuration host.json [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-host-json).
 
 ![image](https://user-images.githubusercontent.com/10808715/138612831-424d1085-40f9-4c59-bb31-9195eca2d55e.png)
 
