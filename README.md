@@ -20,6 +20,9 @@ You can deploy the powershell scripts in two ways:
 
 ## Create a Service Principal & Security Group
 
+> [!NOTE]  
+> Azure Active Directory is now call Entra ID.
+
 On Azure Active Directory:
 
 1. Go to "App Registrations" select "New App" and leave the default options
@@ -54,11 +57,15 @@ As a Power BI Administrator go to the Power BI Tenant Settings and authorize the
 | Power BI Metadata  | Workspaces,DataSets,Reports,Dashboards,Permissions,Schema & Lineage | [Admin Scan API – GetModifiedWorkspaces](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-modified-workspaces); [Admin Scan API – PostWorkspaceInfo](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-post-workspace-info); [Admin Scan API – GetScanStatus (loop)](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-scan-status); [Admin Scan API – GetScanResult](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspace-info-get-scan-result)
 | RefreshHistory      | Dataset Refresh History      | [Admin API - GetGroupsAsAdmin + Expand DataSets](https://docs.microsoft.com/en-us/rest/api/power-bi/admin/groups_getgroupsasadmin); [Dataset API - Get Refresh History](https://docs.microsoft.com/en-us/rest/api/power-bi/datasets/getrefreshhistoryingroup)
 | Users & Licenses  | Users & Licenses; Licenses Details      | [Graph API – Users](https://docs.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http);[Graph API – SubscribedSKUs](https://docs.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http)
+|Tenant Settings | Current Fabric Tenant Settings | [Fabric REST APIs / Tenants /  Tenants - Get Tenant Settings](https://learn.microsoft.com/en-us/rest/api/fabric/admin/tenants/get-tenant-settings) |
 
+<br>
+<br>
 
 # Setup - As an Azure Function
 
 ![image](https://user-images.githubusercontent.com/10808715/138757904-8be24316-d971-4b16-a31b-18b840e88d48.png)
+*Fabric  API used for Tenant settings but does not require any other permissions for your Service Principal
 
 On an Azure Subscription create a resource group:
 
@@ -80,7 +87,10 @@ Basics
 
 Hosting
 - Storage Account - Create a new storage account to hold the data collected from the Azure Function
-- Plan Type - Consumption, on a large Power BI tenant a dedicated plan might be needed because on consumption the functions have a 10 minute timeout. Learn more about timeouts [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale#timeout) and how to extend the timeout configuration host.json [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-host-json).
+- Plan Type - Consumption
+
+> [!NOTE]  
+> On a large Power BI tenant a dedicated plan might be needed because on consumption the functions have a 10 minute timeout. Learn more about timeouts [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale#timeout) and how to extend the timeout configuration host.json [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-host-json).
 
 ![image](https://user-images.githubusercontent.com/10808715/138612831-424d1085-40f9-4c59-bb31-9195eca2d55e.png)
 
@@ -105,6 +115,7 @@ Open the Azure Function page, go to "Advanced Tools" and click "Go ➔" This wil
 Go to "Tools" -> "Zip Push Deploy" and drag & drop the file [AzureFunction.zip](./AzureFunction.zip):
 
 ![image](https://user-images.githubusercontent.com/10808715/138612860-6c849c90-8c56-4c0d-b914-22cf8a6ba57a.png)
+<br>
 ![image](https://user-images.githubusercontent.com/10808715/138612867-a3fbe8f9-bae0-412c-936b-f893da3c8c46.png)
 
 Confirm if the deploy was successful:
@@ -174,7 +185,8 @@ The Azure Function has 4 time trigger functions enabled by default:
 | AuditsTimer      | Everyday at 2AM       | Fetches activity data from the Actitivy API
 | CatalogTimer   | Everyday at 1AM    | Fetches metadata from the tenant: workspaces, datasets, reports,data sources
 | DatasetRefreshTimer      | Everyday at 5AM  | Fetches the refresh history of all datasets in workspaces where the service principal is a Member
-| GraphTimer  | Everyday at 4AM        | Fetches the User & License information from Graph API
+| GraphTimer  | Everyday at 4AM        | Fetches the User & License information from Graph API |
+| TenantSettingsTimer| Everyday at 4am | Fetches Tenant Setting data from Fabric API |
 
 The function should be ready to run, go to the function page and open the “AuditsTimer” and Run it:
 
