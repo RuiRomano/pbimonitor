@@ -189,11 +189,11 @@ function Wait-On429Error
         $ex = $_.Exception
         
         $errorText = $ex.ToString()
-
-        if ($errorText -like "*HttpRequestException*" -and ($errorText -like "*429 (Too Many Requests)*" -or $errorText -like "*Response status code does not indicate success: 429*")) {
+        ## If code errors at this location it is likely due to a 429 error. The PowerShell comandlets do not handle 429 errors with the appropriate message. This code will cover the known errors codes.
+        if ($errorText -like "*Error reading JObject from JsonReader*" -or ($errorText -like "*429 (Too Many Requests)*" -or $errorText -like "*Response status code does not indicate success: *" -or $errorText -like "*You have exceeded the amount of requests allowed*")) {
 
             Write-Host "'429 (Too Many Requests)' Error - Sleeping for $sleepSeconds seconds before trying again" -ForegroundColor Yellow
-
+            Write-Host "Printing Error for Logs: '$($errorText)'"
             $tentatives = $tentatives - 1
 
             if ($tentatives -lt 0)
