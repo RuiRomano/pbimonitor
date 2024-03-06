@@ -29,7 +29,7 @@ function Get-AuthToken {
     #$appsecret = [System.Web.HttpUtility]::urlencode($appsecret)
 
     $body = @{
-    grant_type    = "client_credentials"
+    grant_type    = $granttype
     client_id     = $appid
     client_secret = $appsecret
     resource      = $resource
