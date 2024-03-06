@@ -37,7 +37,7 @@ else {
 
 # Ensure Folders for PBI Report
 
-@("$($config.OutputPath)\Activity", "$($config.OutputPath)\Catalog", "$($config.OutputPath)\Graph") |% {
+@("$($config.OutputPath)\Activity", "$($config.OutputPath)\Catalog", "$($config.OutputPath)\Graph") | ForEach-Object {
     New-Item -ItemType Directory -Path $_ -ErrorAction SilentlyContinue | Out-Null
 }
 

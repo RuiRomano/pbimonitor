@@ -150,7 +150,7 @@ function Get-ArrayInBatches
 
     do
     {   
-        $batchItems = @($array | Select -First $batchCount -Skip $skip)
+        $batchItems = @($array | Select-Object -First $batchCount -Skip $skip)
 
         if ($batchItems)
         {

@@ -29,7 +29,7 @@ function Get-AuthToken {
     #$appsecret = [System.Web.HttpUtility]::urlencode($appsecret)
 
     $body = @{
-    grant_type    = "client_credentials"
+    grant_type    = $granttype
     client_id     = $appid
     client_secret = $appsecret
     resource      = $resource
@@ -85,7 +85,7 @@ function Read-FromTenantAPI {
                 Start-Sleep -Seconds 1000
             }              
             else {
-                if ($ex.Response -ne $null) {
+                if ($null -ne $ex.Response) {
                     $statusCode = $ex.Response.StatusCode
 
                     $stream = $ex.Response.GetResponseStream()
@@ -176,5 +176,5 @@ try {
 finally {
     $stopwatch.Stop()
 
-    Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
+    Write-Host "Elapsed: $($stopwatch.Elapsed.TotalSeconds)s"
 }

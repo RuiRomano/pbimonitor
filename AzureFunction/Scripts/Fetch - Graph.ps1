@@ -88,7 +88,7 @@ function Read-FromGraphAPI {
                 Start-Sleep -Seconds 1000
             }              
             else {
-                if ($ex.Response -ne $null) {
+                if ($null -ne $ex.Response) {
                     $statusCode = $ex.Response.StatusCode
 
                     $stream = $ex.Response.GetResponseStream()
@@ -179,7 +179,7 @@ try {
 
         Write-Host "Calling Graph API: '$($graphCall.GraphUrl)'"
 
-        $data = Read-FromGraphAPI -accessToken $authToken -url $graphCall.GraphUrl | select * -ExcludeProperty "@odata.id"
+        $data = Read-FromGraphAPI -accessToken $authToken -url $graphCall.GraphUrl | Select-Object * -ExcludeProperty "@odata.id"
 
         $filePath = $graphCall.FilePath
 
@@ -193,7 +193,7 @@ try {
 
             if ($graphCall.GraphUrl -like "$graphUrl/groups*")
             {
-                #$groupsWithMoreThan20Members = $dataBatch |? { $_.members.Count -ge 20 }
+                #$groupsWithMoreThan20Members = $dataBatch | Where-Object { $_.members.Count -ge 20 }
             
                 #Write-Host "Groups with more than 20 members: $($groupsWithMoreThan20Members.Count)"
                 
@@ -239,5 +239,5 @@ try {
 finally {
     $stopwatch.Stop()
 
-    Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
+    Write-Host "Elapsed: $($stopwatch.Elapsed.TotalSeconds)s"
 }

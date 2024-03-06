@@ -40,5 +40,5 @@ finally
 {
     $stopwatch.Stop()
 
-    Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
+    Write-Host "Elapsed: $($stopwatch.Elapsed.TotalSeconds)s"
 }
