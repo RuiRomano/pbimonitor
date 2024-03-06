@@ -98,7 +98,7 @@ try {
                 $audits += @($result.activityEventEntities)               
             }
 
-            if ($audits.Count -ne 0 -and ($audits.Count -ge $outputBatchCount -or $result.continuationToken -eq $null))
+            if ($audits.Count -ne 0 -and ($audits.Count -ge $outputBatchCount -or $null -eq $result.continuationToken))
             {
                 # To avoid duplicate data on existing files, first dont append pageindex to overwrite existing full file
 
@@ -135,7 +135,7 @@ try {
                 $audits = @()
             }
         }
-        while($result.continuationToken -ne $null)
+        while($null -ne $result.continuationToken)
 
         if ($flagNoActivity)
         {

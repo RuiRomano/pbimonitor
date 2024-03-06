@@ -88,7 +88,7 @@ function Read-FromGraphAPI {
                 Start-Sleep -Seconds 1000
             }              
             else {
-                if ($ex.Response -ne $null) {
+                if ($null -ne $ex.Response) {
                     $statusCode = $ex.Response.StatusCode
 
                     $stream = $ex.Response.GetResponseStream()
