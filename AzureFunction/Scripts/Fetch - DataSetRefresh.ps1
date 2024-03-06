@@ -65,16 +65,16 @@ try {
 
     Write-Host "Workspaces: $($workspaces.Count)"
 
-    $workspaces = $workspaces | ? { $_.users | ? { $_.identifier -ieq $pbiUserIdentifier } }
+    $workspaces = $workspaces | Where-Object { $_.users | Where-Object { $_.identifier -ieq $pbiUserIdentifier } }
 
     Write-Host "Workspaces where user is a member: $($workspaces.Count)"
 
     # Only look at Active, V2 Workspaces and with Datasets
 
-    $workspaces = @($workspaces | ? { $_.type -eq "Workspace" -and $_.state -eq "Active" -and $_.datasets.Count -gt 0 })
+    $workspaces = @($workspaces | Where-Object { $_.type -eq "Workspace" -and $_.state -eq "Active" -and $_.datasets.Count -gt 0 })
 
     if ($workspaceFilter -and $workspaceFilter.Count -gt 0) {
-        $workspaces = @($workspaces | ? { $workspaceFilter -contains $_.Id })
+        $workspaces = @($workspaces | Where-Object { $workspaceFilter -contains $_.Id })
     }
 
     Write-Host "Workspaces to get refresh history: $($workspaces.Count)"
@@ -89,7 +89,7 @@ try {
 
         Write-Host "Datasets: $(@($workspace.datasets).Count)"
 
-        $refreshableDatasets = @($workspace.datasets | ? { $_.isRefreshable -eq $true -and $_.addRowsAPIEnabled -eq $false })
+        $refreshableDatasets = @($workspace.datasets | Where-Object { $_.isRefreshable -eq $true -and $_.addRowsAPIEnabled -eq $false })
 
         Write-Host "Refreshable Datasets: $($refreshableDatasets.Count)"
 
@@ -104,7 +104,7 @@ try {
                 $dsRefreshHistory = $dsRefreshHistory.value               
 
                 if ($dsRefreshHistory) {              
-                    $dsRefreshHistory = @($dsRefreshHistory | Select *, @{Name = "dataSetId"; Expression = { $dataset.id } }, @{Name = "dataSet"; Expression = { $dataset.name } }`
+                    $dsRefreshHistory = @($dsRefreshHistory | Select-Object *, @{Name = "dataSetId"; Expression = { $dataset.id } }, @{Name = "dataSet"; Expression = { $dataset.name } }`
                             , @{Name = "group"; Expression = { $workspace.name } }, @{Name = "configuredBy"; Expression = { $dataset.configuredBy } })
 
                     $dsRefreshHistoryGlobal += $dsRefreshHistory
