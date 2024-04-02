@@ -220,7 +220,7 @@ try {
 
             # Wait for Scan to execute - https://docs.microsoft.com/en-us/rest/api/power-bi/admin/workspaceinfo_getscanstatus (10,000 requests per hour)
         
-            while (@($workspacesScanRequests | ? status -in @("Running", "NotStarted"))) {
+            while (@($workspacesScanRequests | Where-Object status -in @("Running", "NotStarted"))) {
                 Write-Host "Waiting for scan results, sleeping for $scanStatusSleepSeconds seconds..."
         
                 Start-Sleep -Seconds $scanStatusSleepSeconds
@@ -293,5 +293,5 @@ try {
 finally {
     $stopwatch.Stop()
 
-    Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
+    Write-Host "Elapsed: $($stopwatch.Elapsed.TotalSeconds)s"
 }

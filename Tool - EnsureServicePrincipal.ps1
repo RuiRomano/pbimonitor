@@ -62,18 +62,18 @@ try
      
     # Only look at active workspaces and V2
 
-    $workspaces = @($workspaces |? {$_.type -eq "Workspace" -and $_.state -eq "Active"})
+    $workspaces = @($workspaces | Where-Object {$_.type -eq "Workspace" -and $_.state -eq "Active"})
 
     if ($workspaceFilter -and $workspaceFilter.Count -gt 0)
     {
-        $workspaces = @($workspaces |? { $workspaceFilter -contains $_.Id})
+        $workspaces = @($workspaces | Where-Object { $workspaceFilter -contains $_.Id})
     }
 
     # Filter workspaces where the serviceprincipal is not there
 
-    $workspaces = $workspaces |? {
+    $workspaces = $workspaces | Where-Object {
         
-        $members = @($_.users |? { $_.identifier -eq $servicePrincipalObjectId })
+        $members = @($_.users | Where-Object { $_.identifier -eq $servicePrincipalObjectId })
        
         if ($members.Count -eq 0)
         {
@@ -109,5 +109,5 @@ finally
 {
     $stopwatch.Stop()
 
-    Write-Host "Ellapsed: $($stopwatch.Elapsed.TotalSeconds)s"
+    Write-Host "Elapsed: $($stopwatch.Elapsed.TotalSeconds)s"
 }
