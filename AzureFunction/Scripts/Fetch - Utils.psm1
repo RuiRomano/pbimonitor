@@ -21,10 +21,17 @@ function Add-FolderToBlobStorage {
     )
 
     if ($storageAccountConnStr) {
+        # If connection string is provided (legacy method)
         $ctx = New-AzStorageContext -ConnectionString $storageAccountConnStr
     }
+    elseif ($storageAccountName) {
+        # Use Managed Identity if no shared key is provided
+        Write-Host "Using Managed Identity for authentication to Storage Account '$storageAccountName'"
+
+        $ctx = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
+    }
     else {
-        $ctx = New-AzStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey
+        throw "Storage account information is missing. Please provide StorageAccountName."
     }
 
     if ($ensureContainer) {
@@ -72,14 +79,22 @@ function Add-FileToBlobStorage {
     )
 
     if ($storageAccountConnStr) {
+        # If connection string is provided (legacy method)
         $ctx = New-AzStorageContext -ConnectionString $storageAccountConnStr
     }
+    elseif ($storageAccountName) {
+        # Use Managed Identity if no shared key is provided
+        Write-Host "Using Managed Identity for authentication to Storage Account '$storageAccountName'"
+        Write-Host "Ensuring container '$storageContainerName'"
+
+        $ctx = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
+    }
     else {
-        $ctx = New-AzStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey
+        throw "Storage account information is missing. Please provide StorageAccountName."
     }
 
     if ($ensureContainer) {
-        #Write-Host "Ensuring container '$storageContainerName'"
+        Write-Host "Ensuring container '$storageContainerName'"
 
         New-AzStorageContainer -Context $ctx -Name $storageContainerName -Permission Off -ErrorAction SilentlyContinue | Out-Null
     }
@@ -101,9 +116,10 @@ function Add-FileToBlobStorageInternal {
     )
 
     if (Test-Path $filePath) {
-        Write-Host "Adding file '$filePath' to blob storage under '$storageRootPath'"
+        Write-Host "Adding file '$filePath' files to blobstorage '$storageAccountName/$storageContainerName/$storageRootPath'"
 
         $filePath = Resolve-Path $filePath
+
         $filePath = $filePath.ToLower()
 
         if ($rootFolderPath) {
@@ -112,12 +128,9 @@ function Add-FileToBlobStorageInternal {
 
             $fileName = (Split-Path $filePath -Leaf)
             $parentFolder = (Split-Path $filePath -Parent)
-
-            # Ensure proper relative path handling
-            $relativeFolder = $parentFolder.Replace($rootFolderPath, "").Replace("\", "/").TrimStart("/")
+            $relativeFolder = $parentFolder.Replace($rootFolderPath, "").Replace("\", "/").TrimStart("/").Trim();
         }
 
-        # Ensure relativeFolder is correctly handled
         if (!([string]::IsNullOrEmpty($relativeFolder))) {
             $blobName = "$storageRootPath/$relativeFolder/$fileName"
         }
@@ -125,12 +138,10 @@ function Add-FileToBlobStorageInternal {
             $blobName = "$storageRootPath/$fileName"
         }
 
-        Write-Host "Uploading to Blob Storage Path: '$blobName'"
-
         Set-AzStorageBlobContent -File $filePath -Container $storageContainerName -Blob $blobName -Context $ctx -Force | Out-Null
     }
     else {
-        Write-Host "❌ File '$filePath' does not exist."
+        Write-Host "File '$filePath' dont exist"
     }
 }
 
@@ -154,7 +165,7 @@ function Get-ArrayInBatches
 
     do
     {
-        $batchItems = @($array | Select -First $batchCount -Skip $skip)
+        $batchItems = @($array | Select-Object -First $batchCount -Skip $skip)
 
         if ($batchItems)
         {
@@ -193,11 +204,11 @@ function Wait-On429Error
         $ex = $_.Exception
 
         $errorText = $ex.ToString()
-
-        if ($errorText -like "*HttpRequestException*" -and ($errorText -like "*429 (Too Many Requests)*" -or $errorText -like "*Response status code does not indicate success: 429*")) {
+        ## If code errors at this location it is likely due to a 429 error. The PowerShell comandlets do not handle 429 errors with the appropriate message. This code will cover the known errors codes.
+        if ($errorText -like "*Error reading JObject from JsonReader*" -or ($errorText -like "*429 (Too Many Requests)*" -or $errorText -like "*Response status code does not indicate success: *" -or $errorText -like "*You have exceeded the amount of requests allowed*")) {
 
             Write-Host "'429 (Too Many Requests)' Error - Sleeping for $sleepSeconds seconds before trying again" -ForegroundColor Yellow
-
+            Write-Host "Printing Error for Logs: '$($errorText)'"
             $tentatives = $tentatives - 1
 
             if ($tentatives -lt 0)

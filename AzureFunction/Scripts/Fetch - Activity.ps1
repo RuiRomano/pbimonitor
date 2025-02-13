@@ -1,7 +1,8 @@
 #Requires -Modules MicrosoftPowerBIMgmt.Profile
 
 param(
-    [psobject]$config,
+    [psobject]$config
+    ,
     [string]$stateFilePath
 )
 
@@ -11,9 +12,11 @@ try {
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
 
-    if ($config.ActivityFileBatchSize) {
+    if ($config.ActivityFileBatchSize)
+    {
         $outputBatchCount = $config.ActivityFileBatchSize
-    } else {
+    }
+    else {
         $outputBatchCount = 5000
     }
 
@@ -28,7 +31,8 @@ try {
 
     if (Test-Path $stateFilePath) {
         $state = Get-Content $stateFilePath | ConvertFrom-Json
-    } else {
+    }
+    else {
         $state = New-Object psobject
     }
 
@@ -39,12 +43,14 @@ try {
             $state.Activity.LastRun = [datetime]::Parse($state.Activity.LastRun).ToUniversalTime()
         }
         $pivotDate = $state.Activity.LastRun
-    } else {
+    }
+    else {
         $state | Add-Member -NotePropertyName "Activity" -NotePropertyValue @{"LastRun" = $null } -Force
         $pivotDate = $maxHistoryDate
     }
 
-    if ($pivotDate -lt $maxHistoryDate) {
+    if ($pivotDate -lt $maxHistoryDate)
+    {
         Write-Host "Last run was more than 30 days ago"
         $pivotDate = $maxHistoryDate
     }
@@ -54,16 +60,20 @@ try {
 
     Write-Host "Getting OAuth Token"
 
-    if ($config.ServicePrincipal.AppId) {
+    if ($config.ServicePrincipal.AppId)
+    {
         $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
+
         $pbiAccount = Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $config.ServicePrincipal.TenantId -Credential $credential -Environment $config.ServicePrincipal.Environment
-    } else {
+    }
+    else {
         $pbiAccount = Connect-PowerBIServiceAccount
     }
 
     Write-Host "Login with: $($pbiAccount.UserName)"
 
     # Gets audit data for each day
+
     while ($pivotDate -le [datetime]::UtcNow) {
         Write-Host "Getting audit data for: '$($pivotDate.ToString("yyyyMMdd"))'"
 
@@ -73,21 +83,30 @@ try {
         $pageIndex = 1
         $flagNoActivity = $true
 
-        do {
-            if (!$result.continuationUri) {
+        do
+        {
+            if (!$result.continuationUri)
+            {
                 $result = Invoke-PowerBIRestMethod -Url $activityAPIUrl -method Get | ConvertFrom-Json
-            } else {
+            }
+            else {
                 $result = Invoke-PowerBIRestMethod -Url $result.continuationUri -method Get | ConvertFrom-Json
             }
 
-            if ($result.activityEventEntities) {
+            if ($result.activityEventEntities)
+            {
                 $audits += @($result.activityEventEntities)
             }
 
-            if ($audits.Count -ne 0 -and ($audits.Count -ge $outputBatchCount -or $null -eq $result.continuationToken)) {
-                if ($pageIndex -eq 1) {
+            if ($audits.Count -ne 0 -and ($audits.Count -ge $outputBatchCount -or $null -eq $result.continuationToken))
+            {
+                # To avoid duplicate data on existing files, first dont append pageindex to overwrite existing full file
+
+                if ($pageIndex -eq 1)
+                {
                     $outputFilePath = ("$outputPath\{0:yyyyMMdd}.json" -f $pivotDate)
-                } else {
+                }
+                else {
                     $outputFilePath = ("$outputPath\{0:yyyyMMdd}_$pageIndex.json" -f $pivotDate)
                 }
 
@@ -98,29 +117,32 @@ try {
                 ConvertTo-Json @($audits) -Compress -Depth 10 | Out-File $outputFilePath -force
 
                 if ($config.StorageAccountName -and $config.StorageAccountContainerName) {
-                    Write-Host "Writing to Blob Storage using RBAC authentication"
+                    Write-Host "Uploading to Blob Storage..."
 
                     $storageRootPath = "$($config.StorageAccountContainerRootPath)/activity"
 
-                    # Create Storage Context (Automatically Uses Managed Identity)
-                    $ctx = New-AzStorageContext -StorageAccountName $config.StorageAccountName
-
-                    # Upload file without authentication
-                    Set-AzStorageBlobContent -File $outputFilePath -Container $config.StorageAccountContainerName -Blob ("activity/" + (Split-Path -Leaf $outputFilePath)) -Context $ctx -Force
+                    Add-FileToBlobStorage -storageAccountName $config.StorageAccountName `
+                                          -storageContainerName $config.StorageAccountContainerName `
+                                          -storageRootPath $storageRootPath `
+                                          -filePath $outputFilePath `
+                                          -rootFolderPath $rootOutputPath
 
                     Write-Host "Deleting local file '$outputFilePath'"
+
                     Remove-Item $outputFilePath -Force
                 }
 
                 $flagNoActivity = $false
 
                 $pageIndex++
+
                 $audits = @()
             }
         }
-        while ($null -ne $result.continuationToken)
+        while($null -ne $result.continuationToken)
 
-        if ($flagNoActivity) {
+        if ($flagNoActivity)
+        {
             Write-Warning "No audit logs for date: '$($pivotDate.ToString("yyyyMMdd"))'"
         }
 
@@ -129,13 +151,17 @@ try {
         $pivotDate = $pivotDate.AddDays(1)
 
         # Save state
+
         Write-Host "Saving state"
+
         New-Item -Path (Split-Path $stateFilePath -Parent) -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
+
         ConvertTo-Json $state | Out-File $stateFilePath -force -Encoding utf8
     }
 
 }
 finally {
     $stopwatch.Stop()
+
     Write-Host "Elapsed: $($stopwatch.Elapsed.TotalSeconds)s"
 }

@@ -1,6 +1,6 @@
 ﻿#Requires -Modules MicrosoftPowerBIMgmt.Profile, MicrosoftPowerBIMgmt.Workspaces
 
-## README - This script will run with the configured ServicePrincipal.
+## README - This script will run with the configured ServicePrincipal, although there are no Admin API's for Schedule Refresh. To Ensure the ServicePrincipal is a member of all Workspaces run the tool "Tool - EnsureServicePrincipal.ps1"
 param(
     [psobject]$config,
     $workspaceFilter = @()
@@ -9,35 +9,18 @@ param(
 $ErrorActionPreference = "Stop"
 $VerbosePreference = "SilentlyContinue"
 
-# Function to Get Managed Identity OAuth Token for Azure Storage
-function Add-FileToBlobStorage {
-    param (
-        [string]$storageAccountName,
-        [string]$containerName,
-        [string]$filePath,
-        [string]$blobPath
-    )
-
-    Write-Host "Uploading file '$filePath' to Azure Blob Storage"
-
-    # Create Storage Context (Automatically Uses Managed Identity)
-    $ctx = New-AzStorageContext -StorageAccountName $storageAccountName
-
-    # Upload File to Blob Storage (No Authentication Required)
-    Set-AzStorageBlobContent -File $filePath -Container $containerName -Blob $blobPath -Context $ctx -Force
-
-    Write-Host "✅ File successfully uploaded to Azure Blob Storage."
-}
-
 try {
     Write-Host "Starting Power BI Dataset Refresh History Fetch"
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
 
-    # Ensure output folders exist
+    # ensure folder
+
     $rootOutputPath = "$($config.OutputPath)\datasetrefresh"
+
     $outputPath = ("$rootOutputPath\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
+
     $tempPath = Join-Path $outputPath "_temp"
 
     New-Item -ItemType Directory -Path $tempPath -ErrorAction SilentlyContinue | Out-Null
@@ -56,32 +39,38 @@ try {
 
     Write-Host "Login with: $($pbiAccount.UserName)"
 
-    # Decode OAuth Token to Get User Identifier
+    # Find Token Object Id, by decoding OAUTH TOken - https://blog.kloud.com.au/2019/07/31/jwtdetails-powershell-module-for-decoding-jwt-access-tokens-with-readable-token-expiry-time/
     $token = (Get-PowerBIAccessToken -AsString).Split(" ")[1]
     $tokenPayload = $token.Split(".")[1].Replace('-', '+').Replace('_', '/')
     while ($tokenPayload.Length % 4) { $tokenPayload += "=" }
     $tokenPayload = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($tokenPayload)) | ConvertFrom-Json
     $pbiUserIdentifier = $tokenPayload.oid
 
-    # Get Workspaces + Users
+    #region Workspace Users
+
+    # Get workspaces + users
+
     $workspacesFilePath = "$tempPath\workspaces.datasets.json"
 
     if (!(Test-Path $workspacesFilePath)) {
         $workspaces = Get-PowerBIWorkspace -Scope Organization -All -Include Datasets
+
         $workspaces | ConvertTo-Json -Depth 5 -Compress | Out-File $workspacesFilePath
     }
     else {
         Write-Host "Workspaces file already exists"
+
         $workspaces = Get-Content -Path $workspacesFilePath | ConvertFrom-Json
     }
 
     Write-Host "Workspaces: $($workspaces.Count)"
 
-    # Filter Workspaces where User is a Member
     $workspaces = $workspaces | Where-Object { $_.users | Where-Object { $_.identifier -ieq $pbiUserIdentifier } }
+
     Write-Host "Workspaces where user is a member: $($workspaces.Count)"
 
-    # Filter Only Active, V2 Workspaces with Datasets
+    # Only look at Active, V2 Workspaces and with Datasets
+
     $workspaces = @($workspaces | Where-Object { $_.type -eq "Workspace" -and $_.state -eq "Active" -and $_.datasets.Count -gt 0 })
 
     if ($workspaceFilter -and $workspaceFilter.Count -gt 0) {
@@ -90,13 +79,15 @@ try {
 
     Write-Host "Workspaces to get refresh history: $($workspaces.Count)"
 
-    $dsRefreshHistoryGlobal = @()
     $total = $Workspaces.Count
     $item = 0
 
     foreach ($workspace in $Workspaces) {
         $item++
+
         Write-Host "Processing workspace: '$($workspace.Name)' $item/$total"
+
+        Write-Host "Datasets: $(@($workspace.datasets).Count)"
 
         $refreshableDatasets = @($workspace.datasets | Where-Object { $_.isRefreshable -eq $true -and $_.addRowsAPIEnabled -eq $false })
 
@@ -106,7 +97,10 @@ try {
             try {
                 Write-Host "Processing dataset: '$($dataset.name)'"
 
+                Write-Host "Getting refresh history"
+
                 $dsRefreshHistory = Invoke-PowerBIRestMethod -Url "groups/$($workspace.id)/datasets/$($dataset.id)/refreshes" -Method Get | ConvertFrom-Json
+
                 $dsRefreshHistory = $dsRefreshHistory.value
 
                 if ($dsRefreshHistory) {
@@ -118,11 +112,16 @@ try {
             }
             catch {
                 $ex = $_.Exception
+
                 Write-Error -message "Error processing dataset: '$($ex.Message)'" -ErrorAction Continue
+
+                # If its unauthorized no need to advance to other datasets in this workspace
 
                 if ($ex.Message.Contains("Unauthorized") -or $ex.Message.Contains("(404) Not Found")) {
                     Write-Host "Got unauthorized/notfound, skipping workspace"
+
                     break
+
                 }
             }
         }
@@ -132,18 +131,25 @@ try {
         $outputFilePath = "$outputPath\workspaces.datasets.refreshes.json"
 
         ConvertTo-Json @($dsRefreshHistoryGlobal) -Compress -Depth 5 | Out-File $outputFilePath -force
-        Write-Host "StorageAccountName: $($config.StorageAccountName)"
-        Write-Host "StorageAccountContainerName: $($config.StorageAccountContainerName)"
-        if ($config.StorageAccountName -and $config.StorageAccountContainerName) {
-            Write-Host "Writing to Blob Storage using Managed Identity"
+
+        if ($config.StorageAccountName -and (Test-Path $outputFilePath)) {
+
+            Write-Host "Writing to Blob Storage"
 
             $storageRootPath = "$($config.StorageAccountContainerRootPath)/datasetrefresh"
 
-            Add-FileToBlobStorage -storageAccountName $config.StorageAccountName -containerName $config.StorageAccountContainerName -filePath $outputFilePath -blobPath ("datasetrefresh/" + (Split-Path -Leaf $outputFilePath))
+            Add-FileToBlobStorage -storageAccountName $config.StorageAccountName
+                  -storageContainerName $config.StorageAccountContainerName
+                  -storageRootPath $storageRootPath
+                  -filePath $outputFilePath
+                  -rootFolderPath $outputPath
+
+            Remove-Item $outputFilePath -Force
         }
     }
 }
 finally {
     $stopwatch.Stop()
+
     Write-Host "Elapsed: $($stopwatch.Elapsed.TotalSeconds)s"
 }

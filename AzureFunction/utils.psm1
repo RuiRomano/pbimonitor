@@ -5,7 +5,7 @@ function Get-PBIMonitorConfig {
         [string]
         $currentPath
     )
-        
+
     Write-Host "Building PBIMonitor Config from Azure Function Configuration"
 
     $appDataPath = $env:PBIMONITOR_AppDataPath
@@ -22,7 +22,7 @@ function Get-PBIMonitorConfig {
         $outputPath = "$($env:temp)\PBIMonitorData\$([guid]::NewGuid().ToString("n"))"
     }
 
-    $scriptsPath = $env:PBIMONITOR_ScriptsPath                
+    $scriptsPath = $env:PBIMONITOR_ScriptsPath
 
     if (!$scriptsPath)
     {
@@ -41,7 +41,7 @@ function Get-PBIMonitorConfig {
     if (!$stgAccountConnStr)
     {
         $stgAccountConnStr = $env:AzureWebJobsStorage
-    }   
+    }
 
     $containerName = $env:PBIMONITOR_StorageContainerName
 
@@ -84,11 +84,11 @@ function Get-PBIMonitorConfig {
             "Environment" = $environment;
         }
     }
-    
+
     Write-Host "AppDataPath: $appDataPath"
     Write-Host "ScriptsPath: $scriptsPath"
-    Write-Host "OutputPath: $outputPath"       
-    
+    Write-Host "OutputPath: $outputPath"
+
     Write-Output $config
 
 }
