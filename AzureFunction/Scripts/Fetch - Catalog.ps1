@@ -84,7 +84,7 @@ try {
 
     # Save to Blob
 
-    if ($config.StorageAccountName -and $config.StorageAccountContainerName) {
+    if ($config.StorageAccountName) {
 
         Write-Host "Writing Snapshots to Blob Storage"
 
@@ -92,11 +92,7 @@ try {
 
         foreach ($outputFilePath in $snapshotFiles) {
             if (Test-Path $outputFilePath) {
-                Add-FileToBlobStorage -storageAccountName $config.StorageAccountName
-                      -storageContainerName $config.StorageAccountContainerName
-                      -storageRootPath $storageRootPath
-                      -filePath $outputFilePath
-                      -rootFolderPath $outputPath
+                Add-FileToBlobStorage -storageAccountName $config.StorageAccountName -StorageAccountContainerName $config.StorageContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath
 
                 Remove-Item $outputFilePath -Force
             }
@@ -267,7 +263,7 @@ try {
 
                     #     $storageRootPath = "$($config.StorageAccountContainerRootPath)/catalog"
 
-                    #     Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath
+                    #     Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath
 
                     #     Remove-Item $outputFilePath -Force
                     # }
@@ -276,11 +272,7 @@ try {
 
                         $storageRootPath = "$($config.StorageAccountContainerRootPath)/catalog"
 
-                        Add-FileToBlobStorage -storageAccountName $config.StorageAccountName
-                              -storageContainerName $config.StorageAccountContainerName
-                              -storageRootPath $storageRootPath
-                              -filePath $outputFilePath
-                              -rootFolderPath $outputPath
+                        Add-FileToBlobStorage -storageAccountName $config.StorageAccountName -StorageAccountContainerName $config.StorageContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath
 
                         Write-Host "Deleting local file '$outputFilePath'"
 

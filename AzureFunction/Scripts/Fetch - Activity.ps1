@@ -122,7 +122,7 @@ try {
                     $storageRootPath = "$($config.StorageAccountContainerRootPath)/activity"
 
                     Add-FileToBlobStorage -storageAccountName $config.StorageAccountName `
-                                          -storageContainerName $config.StorageAccountContainerName `
+                                          -StorageAccountContainerName $config.StorageAccountContainerName `
                                           -storageRootPath $storageRootPath `
                                           -filePath $outputFilePath `
                                           -rootFolderPath $rootOutputPath

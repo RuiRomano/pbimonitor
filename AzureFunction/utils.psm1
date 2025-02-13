@@ -69,7 +69,8 @@ function Get-PBIMonitorConfig {
         "ScriptsPath" = $scriptsPath;
         "OutputPath" = $outputPath;
         "StorageAccountConnStr" = $stgAccountConnStr;
-        "StorageAccountContainerName" = $containerName;
+        "StorageAccountName" = $env:PBIMONITOR_StorageAccountName;
+        "StorageAccountContainerName" = $env:PBIMONITOR_StorageContainerName;
         "StorageAccountContainerRootPath" = $containerRootPath;
         "ActivityFileBatchSize" = $env:PBIMONITOR_ActivityFileBatchSize;
         "FullScanAfterDays" = $env:PBIMONITOR_FullScanAfterDays;

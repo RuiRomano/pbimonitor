@@ -214,7 +214,7 @@ try {
 
             ConvertTo-Json @($dataBatch) -Compress -Depth 5 | Out-File $filePath -Force
 
-            if ($config.StorageAccountName -and $config.StorageAccountContainerName) {
+            if ($config.StorageAccountName) {
 
                 Write-Host "Writing to Blob Storage"
 
@@ -224,11 +224,8 @@ try {
 
                 if (Test-Path $outputFilePath)
                 {
-                     Add-FileToBlobStorage -storageAccountName $config.StorageAccountName
-                          -storageContainerName $config.StorageAccountContainerName
-                          -storageRootPath $storageRootPath
-                          -filePath $outputFilePath
-                          -rootFolderPath $outputPath
+                   Add-FileToBlobStorage -storageAccountName $config.StorageAccountName -StorageAccountContainerName $config.StorageContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath
+
                     Remove-Item $outputFilePath -Force
                 }
                 else {

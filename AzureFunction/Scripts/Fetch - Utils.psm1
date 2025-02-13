@@ -3,13 +3,13 @@ function Add-FolderToBlobStorage {
     param
     (
         [string]
-        $storageAccountName,
+        $StorageAccountName,
         [string]
         $storageAccountKey,
         [string]
         $storageAccountConnStr,
         [string]
-        $storageContainerName,
+        $StorageAccountContainerName,
         [string]
         $storageRootPath,
         [string]
@@ -24,26 +24,26 @@ function Add-FolderToBlobStorage {
         # If connection string is provided (legacy method)
         $ctx = New-AzStorageContext -ConnectionString $storageAccountConnStr
     }
-    elseif ($storageAccountName) {
+    elseif ($StorageAccountName) {
         # Use Managed Identity if no shared key is provided
-        Write-Host "Using Managed Identity for authentication to Storage Account '$storageAccountName'"
+        Write-Host "Using Managed Identity for authentication to Storage Account '$StorageAccountName'"
 
-        $ctx = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
+        $ctx = New-AzStorageContext -StorageAccountName $StorageAccountName -UseConnectedAccount
     }
     else {
         throw "Storage account information is missing. Please provide StorageAccountName."
     }
 
     if ($ensureContainer) {
-        Write-Host "Ensuring container '$storageContainerName'"
+        Write-Host "Ensuring container '$env:PBIMONITOR_StorageContainerName'"
 
-        New-AzStorageContainer -Context $ctx -Name $storageContainerName -Permission Off -ErrorAction SilentlyContinue | Out-Null
+        New-AzStorageContainer -Context $ctx -Name $env:PBIMONITOR_StorageContainerName -Permission Off -ErrorAction SilentlyContinue | Out-Null
     }
 
     $files = @(Get-ChildItem -Path $folderPath -Filter *.* -Recurse -File)
 
-    Write-Host "Adding folder '$folderPath' (files: $($files.Count)) to blobstorage '$storageAccountName/$storageContainerName/$storageRootPath'"
-
+    Write-Host "Adding folder '$folderPath' (files: $($files.Count)) to blobstorage '$StorageAccountName/$env:PBIMONITOR_StorageContainerName/$storageRootPath'"
+    Write-Host "Root folder PATH: $rootFolderPath"
     if (!$rootFolderPath)
     {
         $rootFolderPath = $folderPath
@@ -61,13 +61,13 @@ function Add-FileToBlobStorage {
     param
     (
         [string]
-        $storageAccountName,
+        $StorageAccountName,
         [string]
         $storageAccountKey,
         [string]
         $storageAccountConnStr,
         [string]
-        $storageContainerName,
+        $StorageAccountContainerName,
         [string]
         $storageRootPath,
         [string]
@@ -78,25 +78,22 @@ function Add-FileToBlobStorage {
         $ensureContainer = $true
     )
 
-    if ($storageAccountConnStr) {
-        # If connection string is provided (legacy method)
-        $ctx = New-AzStorageContext -ConnectionString $storageAccountConnStr
-    }
-    elseif ($storageAccountName) {
+    if ($StorageAccountName) {
         # Use Managed Identity if no shared key is provided
-        Write-Host "Using Managed Identity for authentication to Storage Account '$storageAccountName'"
-        Write-Host "Ensuring container '$storageContainerName'"
+        Write-Host "Using Managed Identity for authentication to Storage Account '$StorageAccountName'"
+        Write-Host "Ensuring container '$env:PBIMONITOR_StorageContainerName'"
 
-        $ctx = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
+        $ctx = New-AzStorageContext -StorageAccountName $StorageAccountName -UseConnectedAccount
     }
     else {
         throw "Storage account information is missing. Please provide StorageAccountName."
     }
 
     if ($ensureContainer) {
-        Write-Host "Ensuring container '$storageContainerName'"
+        Write-Host "Ensuring container '$env:PBIMONITOR_StorageContainerName'"
+        # Write-Host "Container Name: '$env:PBIMONITOR_StorageContainerName'"
 
-        New-AzStorageContainer -Context $ctx -Name $storageContainerName -Permission Off -ErrorAction SilentlyContinue | Out-Null
+        New-AzStorageContainer -Context $ctx -Name $env:PBIMONITOR_StorageContainerName -Permission Off -ErrorAction SilentlyContinue | Out-Null
     }
 
     Add-FileToBlobStorageInternal -ctx $ctx -filePath $filePath -storageRootPath $storageRootPath -rootFolderPath $rootFolderPath
@@ -116,7 +113,9 @@ function Add-FileToBlobStorageInternal {
     )
 
     if (Test-Path $filePath) {
-        Write-Host "Adding file '$filePath' files to blobstorage '$storageAccountName/$storageContainerName/$storageRootPath'"
+        Write-Host "Adding file '$filePath' files to blobstorage '$StorageAccountName/$env:PBIMONITOR_StorageContainerName/$storageRootPath'"
+        Write-Host "File PATH: $filePath"
+        Write-Host "Root folder PATH: $rootFolderPath"
 
         $filePath = Resolve-Path $filePath
 
@@ -128,17 +127,21 @@ function Add-FileToBlobStorageInternal {
 
             $fileName = (Split-Path $filePath -Leaf)
             $parentFolder = (Split-Path $filePath -Parent)
+            Write-Host "Parent folder NAME: $parentFolder"
             $relativeFolder = $parentFolder.Replace($rootFolderPath, "").Replace("\", "/").TrimStart("/").Trim();
+            Write-Host "Relative after TRIM: $relativeFolder"
         }
 
         if (!([string]::IsNullOrEmpty($relativeFolder))) {
+            Write-Host "Relative folder PATH: $relativeFolder"
             $blobName = "$storageRootPath/$relativeFolder/$fileName"
         }
         else {
+            Write-Host "Relative folder PATH: $relativeFolder in ELSE"
             $blobName = "$storageRootPath/$fileName"
         }
-
-        Set-AzStorageBlobContent -File $filePath -Container $storageContainerName -Blob $blobName -Context $ctx -Force | Out-Null
+        Write-Host "BLOB NAME: $blobName"
+        Set-AzStorageBlobContent -File $filePath -Container $env:PBIMONITOR_StorageContainerName -Blob $blobName -Context $ctx -Force | Out-Null
     }
     else {
         Write-Host "File '$filePath' dont exist"

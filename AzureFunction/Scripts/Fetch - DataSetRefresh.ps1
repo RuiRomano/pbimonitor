@@ -138,11 +138,7 @@ try {
 
             $storageRootPath = "$($config.StorageAccountContainerRootPath)/datasetrefresh"
 
-            Add-FileToBlobStorage -storageAccountName $config.StorageAccountName
-                  -storageContainerName $config.StorageAccountContainerName
-                  -storageRootPath $storageRootPath
-                  -filePath $outputFilePath
-                  -rootFolderPath $outputPath
+            Add-FileToBlobStorage -storageAccountName $config.StorageAccountName -StorageAccountContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath
 
             Remove-Item $outputFilePath -Force
         }
