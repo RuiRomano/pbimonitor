@@ -1,8 +1,8 @@
 ﻿#Requires -Modules MicrosoftPowerBIMgmt.Profile, MicrosoftPowerBIMgmt.Workspaces
 
 ## README - This script will run with the configured ServicePrincipal, although there are no Admin API's for Schedule Refresh. To Ensure the ServicePrincipal is a member of all Workspaces run the tool "Tool - EnsureServicePrincipal.ps1"
-param(    
-    [psobject]$config,          
+param(
+    [psobject]$config,
     $workspaceFilter = @()
 )
 
@@ -19,15 +19,15 @@ try {
 
     $rootOutputPath = "$($config.OutputPath)\datasetrefresh"
 
-    $outputPath = ("$rootOutputPath\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today) 
-    
+    $outputPath = ("$rootOutputPath\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
+
     $tempPath = Join-Path $outputPath "_temp"
 
     New-Item -ItemType Directory -Path $tempPath -ErrorAction SilentlyContinue | Out-Null
     New-Item -ItemType Directory -Path $outputPath -ErrorAction SilentlyContinue | Out-Null
 
     Write-Host "Getting OAuth Token"
-    
+
     if ($config.ServicePrincipal.AppId) {
         $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $config.ServicePrincipal.AppId, ($config.ServicePrincipal.AppSecret | ConvertTo-SecureString -AsPlainText -Force)
 
@@ -38,7 +38,7 @@ try {
     }
 
     Write-Host "Login with: $($pbiAccount.UserName)"
-    
+
     # Find Token Object Id, by decoding OAUTH TOken - https://blog.kloud.com.au/2019/07/31/jwtdetails-powershell-module-for-decoding-jwt-access-tokens-with-readable-token-expiry-time/
     $token = (Get-PowerBIAccessToken -AsString).Split(" ")[1]
     $tokenPayload = $token.Split(".")[1].Replace('-', '+').Replace('_', '/')
@@ -48,20 +48,20 @@ try {
 
     #region Workspace Users
 
-    # Get workspaces + users 
+    # Get workspaces + users
 
-    $workspacesFilePath = "$tempPath\workspaces.datasets.json"    
+    $workspacesFilePath = "$tempPath\workspaces.datasets.json"
 
-    if (!(Test-Path $workspacesFilePath)) {        
+    if (!(Test-Path $workspacesFilePath)) {
         $workspaces = Get-PowerBIWorkspace -Scope Organization -All -Include Datasets
-             
-        $workspaces | ConvertTo-Json -Depth 5 -Compress | Out-File $workspacesFilePath        
+
+        $workspaces | ConvertTo-Json -Depth 5 -Compress | Out-File $workspacesFilePath
     }
     else {
         Write-Host "Workspaces file already exists"
 
         $workspaces = Get-Content -Path $workspacesFilePath | ConvertFrom-Json
-    }    
+    }
 
     Write-Host "Workspaces: $($workspaces.Count)"
 
@@ -82,10 +82,10 @@ try {
     $total = $Workspaces.Count
     $item = 0
 
-    foreach ($workspace in $Workspaces) {          
+    foreach ($workspace in $Workspaces) {
         $item++
-                   
-        Write-Host "Processing workspace: '$($workspace.Name)' $item/$total" 
+
+        Write-Host "Processing workspace: '$($workspace.Name)' $item/$total"
 
         Write-Host "Datasets: $(@($workspace.datasets).Count)"
 
@@ -95,15 +95,15 @@ try {
 
         foreach ($dataset in $refreshableDatasets) {
             try {
-                Write-Host "Processing dataset: '$($dataset.name)'" 
+                Write-Host "Processing dataset: '$($dataset.name)'"
 
                 Write-Host "Getting refresh history"
 
                 $dsRefreshHistory = Invoke-PowerBIRestMethod -Url "groups/$($workspace.id)/datasets/$($dataset.id)/refreshes" -Method Get | ConvertFrom-Json
 
-                $dsRefreshHistory = $dsRefreshHistory.value               
+                $dsRefreshHistory = $dsRefreshHistory.value
 
-                if ($dsRefreshHistory) {              
+                if ($dsRefreshHistory) {
                     $dsRefreshHistory = @($dsRefreshHistory | Select-Object *, @{Name = "dataSetId"; Expression = { $dataset.id } }, @{Name = "dataSet"; Expression = { $dataset.name } }`
                             , @{Name = "group"; Expression = { $workspace.name } }, @{Name = "configuredBy"; Expression = { $dataset.configuredBy } })
 
@@ -119,15 +119,15 @@ try {
 
                 if ($ex.Message.Contains("Unauthorized") -or $ex.Message.Contains("(404) Not Found")) {
                     Write-Host "Got unauthorized/notfound, skipping workspace"
-                
+
                     break
-                
+
                 }
             }
         }
     }
-    
-    if ($dsRefreshHistoryGlobal.Count -gt 0) {        
+
+    if ($dsRefreshHistoryGlobal.Count -gt 0) {
         $outputFilePath = "$outputPath\workspaces.datasets.refreshes.json"
 
         ConvertTo-Json @($dsRefreshHistoryGlobal) -Compress -Depth 5 | Out-File $outputFilePath -force
@@ -138,7 +138,18 @@ try {
 
             $storageRootPath = "$($config.StorageAccountContainerRootPath)/datasetrefresh"
 
-            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath   
+            Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath
+
+            Remove-Item $outputFilePath -Force
+        }
+
+        if ($config.StorageAccountName -and (Test-Path $outputFilePath)) {
+
+            Write-Host "Writing to Blob Storage"
+
+            $storageRootPath = "$($config.StorageAccountContainerRootPath)/datasetrefresh"
+
+            Add-FileToBlobStorage -storageAccountName $config.StorageAccountName -StorageAccountContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath
 
             Remove-Item $outputFilePath -Force
         }

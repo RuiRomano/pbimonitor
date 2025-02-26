@@ -1,4 +1,4 @@
-param(        
+param(
     [psobject]$config
 )
 
@@ -17,22 +17,22 @@ function Get-AuthToken {
         [string]
         $appsecret ,
         [string]
-        $resource         
+        $resource
     )
 
     write-verbose "getting authentication token"
-    
-    $granttype = "client_credentials"    
+
+    $granttype = "client_credentials"
 
     $tokenuri = "$authority/$tenantid/oauth2/token?api-version=1.0"
 
     $appsecret = [System.Web.HttpUtility]::urlencode($appsecret)
 
-    $body = "grant_type=$granttype&client_id=$appid&resource=$resource&client_secret=$appsecret"    
+    $body = "grant_type=$granttype&client_id=$appid&resource=$resource&client_secret=$appsecret"
 
     $token = invoke-restmethod -method post -uri $tokenuri -body $body
 
-    $accesstoken = $token.access_token    
+    $accesstoken = $token.access_token
 
     write-output $accesstoken
 
@@ -47,7 +47,7 @@ function Read-FromGraphAPI {
         [string]
         $accessToken,
         [string]
-        $format = "JSON"     
+        $format = "JSON"
     )
 
     #https://blogs.msdn.microsoft.com/exchangedev/2017/04/07/throttling-coming-to-outlook-api-and-microsoft-graph/
@@ -56,7 +56,7 @@ function Read-FromGraphAPI {
         $headers = @{
             'Content-Type'  = "application/json"
             'Authorization' = "Bearer $accessToken"
-        }    
+        }
 
         $result = Invoke-RestMethod -Method Get -Uri $url -Headers $headers
 
@@ -64,9 +64,9 @@ function Read-FromGraphAPI {
             ConvertFrom-CSV -InputObject $result | Write-Output
         }
         else {
-            Write-Output $result.value            
+            Write-Output $result.value
 
-            while ($result.'@odata.nextLink') {            
+            while ($result.'@odata.nextLink') {
                 $result = Invoke-RestMethod -Method Get -Uri $result.'@odata.nextLink' -Headers $headers
 
                 Write-Output $result.value
@@ -77,16 +77,16 @@ function Read-FromGraphAPI {
     catch [System.Net.WebException] {
         $ex = $_.Exception
 
-        try {                
+        try {
             $statusCode = $ex.Response.StatusCode
 
-            if ($statusCode -eq 429) {              
+            if ($statusCode -eq 429) {
                 $message = "429 Throthling Error - Sleeping..."
 
                 Write-Host $message
 
                 Start-Sleep -Seconds 1000
-            }              
+            }
             else {
                 if ($null -ne $ex.Response) {
                     $statusCode = $ex.Response.StatusCode
@@ -100,22 +100,22 @@ function Read-FromGraphAPI {
                     $reader.DiscardBufferedData()
 
                     $errorContent = $reader.ReadToEnd()
-                
+
                     $message = "$($ex.Message) - '$errorContent'"
-                      				
+
                 }
                 else {
                     $message = "$($ex.Message) - 'Empty'"
-                }               
-            }    
+                }
+            }
 
-            Write-Error -Exception $ex -Message $message        
+            Write-Error -Exception $ex -Message $message
         }
         finally {
             if ($reader) { $reader.Dispose() }
-            
+
             if ($stream) { $stream.Dispose() }
-        }       		
+        }
     }
 }
 
@@ -125,12 +125,12 @@ try {
     Write-Host "Starting Graph API Fetch"
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
-    $stopwatch.Start()   
+    $stopwatch.Start()
 
     Add-Type -AssemblyName System.Web
 
     $rootOutputPath = "$($config.OutputPath)\graph"
-    
+
     $outputPath = ("$rootOutputPath\{0:yyyy}\{0:MM}\{0:dd}" -f [datetime]::Today)
 
     # ensure folder
@@ -149,7 +149,7 @@ try {
         @{
             GraphUrl = "$graphUrl/subscribedSkus?`$select=id,capabilityStatus,consumedUnits,prepaidUnits,skuid,skupartnumber,prepaidUnits";
             FilePath = "$outputPath\subscribedskus.json"
-        }    
+        }
     )
 
     if ($config.GraphExtractGroups)
@@ -162,14 +162,14 @@ try {
         }
     }
 
-    $paginateCount = 10000  
+    $paginateCount = 10000
 
     if ($config.GraphPaginateCount)
     {
         $paginateCount = $config.GraphPaginateCount
     }
 
-    Write-Host "GraphPaginateCount: $paginateCount"   
+    Write-Host "GraphPaginateCount: $paginateCount"
 
     foreach ($graphCall in $graphCalls)
     {
@@ -185,7 +185,7 @@ try {
 
         Get-ArrayInBatches -array $data -label "Read-FromGraphAPI Local Batch" -batchCount $paginateCount -script {
             param($dataBatch, $i)
-            
+
             if ($i)
             {
                 $filePath = "$([System.IO.Path]::GetDirectoryName($filePath))\$([System.IO.Path]::GetFileNameWithoutExtension($filePath))_$i$([System.IO.Path]::GetExtension($filePath))"
@@ -194,45 +194,64 @@ try {
             if ($graphCall.GraphUrl -like "$graphUrl/groups*")
             {
                 #$groupsWithMoreThan20Members = $dataBatch | Where-Object { $_.members.Count -ge 20 }
-            
+
                 #Write-Host "Groups with more than 20 members: $($groupsWithMoreThan20Members.Count)"
-                
+
                 #foreach($group in $groupsWithMoreThan20Members)
 
                 Write-Host "Looping group batch to get members"
 
                 foreach($group in $dataBatch)
-                {        
+                {
                     $groupMembers = @(Read-FromGraphAPI -accessToken $authToken -url "$graphUrl/groups/$($group.id)/transitiveMembers?`$select=id,displayName,appId,userPrincipalName")
-        
-                    #$group.members = $groupMembers    
-                    $group | Add-Member -NotePropertyName "members" -NotePropertyValue $groupMembers -ErrorAction SilentlyContinue   
+
+                    #$group.members = $groupMembers
+                    $group | Add-Member -NotePropertyName "members" -NotePropertyValue $groupMembers -ErrorAction SilentlyContinue
                 }
             }
 
             Write-Host "Writing to file: '$filePath'"
 
             ConvertTo-Json @($dataBatch) -Compress -Depth 5 | Out-File $filePath -Force
-    
+
             if ($config.StorageAccountConnStr) {
-    
+
                 Write-Host "Writing to Blob Storage"
-            
+
                 $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
-        
+
                 $outputFilePath = $filePath
-         
+
                 if (Test-Path $outputFilePath)
                 {
-                    Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath    
-    
+                    Add-FileToBlobStorage -storageAccountConnStr $config.StorageAccountConnStr -storageContainerName $config.StorageAccountContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $rootOutputPath
+
                     Remove-Item $outputFilePath -Force
                 }
                 else {
                     Write-Host "Cannot find file '$outputFilePath'"
                 }
-            }        
-        }        
+            }
+
+            if ($config.StorageAccountName) {
+
+                Write-Host "Writing to Blob Storage"
+
+                $storageRootPath = "$($config.StorageAccountContainerRootPath)/graph"
+
+                $outputFilePath = $filePath
+
+                if (Test-Path $outputFilePath)
+                {
+                   Add-FileToBlobStorage -storageAccountName $config.StorageAccountName -StorageAccountContainerName $config.StorageContainerName -storageRootPath $storageRootPath -filePath $outputFilePath -rootFolderPath $outputPath
+
+                    Remove-Item $outputFilePath -Force
+                }
+                else {
+                    Write-Host "Cannot find file '$outputFilePath'"
+                }
+            }
+        }
     }
 
 }
