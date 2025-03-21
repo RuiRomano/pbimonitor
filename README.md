@@ -1,3 +1,9 @@
+⚠️ Deprecation Notice
+
+This repository is no longer actively maintained. I recommend considering on the following solutions, which offers improved functionality and ongoing support:
+
+- [Fabric Admin Monitoring](https://learn.microsoft.com/en-us/fabric/admin/monitoring-workspace)
+- [Fabric Unified Admin Monitoring (FUAM)](https://github.com/GT-Analytics/fuam-basic)
 
 # Intro
 
