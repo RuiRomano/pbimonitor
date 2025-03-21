@@ -23,12 +23,12 @@ if (Test-Path $configFilePath) {
 
     # Default Values
 
-    if (!$config.OutputPath) {        
+    if (!$config.OutputPath) {
         $config | Add-Member -NotePropertyName "OutputPath" -NotePropertyValue ".\\Data" -Force
     }
 
     if ($config.ServicePrincipal -and !$config.ServicePrincipal.Environment) {
-        $config.ServicePrincipal | Add-Member -NotePropertyName "Environment" -NotePropertyValue "Public" -Force           
+        $config.ServicePrincipal | Add-Member -NotePropertyName "Environment" -NotePropertyValue "Public" -Force
     }
 }
 else {
@@ -44,15 +44,15 @@ else {
 try {
 
     foreach ($scriptToRun in $scriptsToRun)
-    {        
+    {
         try {
             Write-Host "Running '$scriptToRun'"
 
             & $scriptToRun -config $config
         }
-        catch {            
-            Write-Error "Error on '$scriptToRun' - $($_.Exception.ToString())" -ErrorAction Continue            
-        }   
+        catch {
+            Write-Error "Error on '$scriptToRun' - $($_.Exception.ToString())" -ErrorAction Continue
+        }
     }
 }
 catch {
@@ -61,9 +61,9 @@ catch {
 
     if ($ex.ToString().Contains("429 (Too Many Requests)")) {
         Write-Host "429 Throthling Error - Need to wait before making another request..." -ForegroundColor Yellow
-    }  
+    }
 
     Resolve-PowerBIError -Last
 
-    throw    
+    throw
 }
