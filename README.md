@@ -94,6 +94,7 @@ Basics
 Hosting
 - Storage Account - Create a new storage account to hold the data collected from the Azure Function
 - Plan Type - Consumption
+- Windows OS (for using Kudu service and `C:` path)
 
 > [!NOTE]  
 > On a large Power BI tenant a dedicated plan might be needed because on consumption the functions have a 10 minute timeout. Learn more about timeouts [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale#timeout) and how to extend the timeout configuration host.json [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-host-json).
